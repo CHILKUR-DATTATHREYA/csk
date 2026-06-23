@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSK Electronics - TV Repair & Service System</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- INTRO ANIMATION SCREEN -->
+  <div id="intro-screen">
+    <div class="intro-content">
+      <div class="intro-logo">CSK Electronics Services</div>
+      <div class="intro-subtitle">Precision TV Repair & Restoration</div>
+      <div class="intro-loader"></div>
+    </div>
+  </div>
+
+  <!-- APP SHELL CONTAINER -->
+  <div id="app-container">
+    
+    <!-- TOP HEADER -->
+    <header>
+      <div class="header-brand">
+        <i class="fa-solid fa-tv" style="color: var(--accent-blue); font-size: 1.5rem;"></i>
+        <h1>CSK Electronics</h1>
+      </div>
+      <div class="header-actions">
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="btn-icon" title="Toggle Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <!-- User Badge -->
+        <div id="header-user-info" class="user-badge" style="display: none;">
+          <i class="fa-solid fa-user-circle" style="font-size: 1.25rem;"></i>
+          <span id="user-display-name">User</span>
+          <span id="user-display-role" class="role">Role</span>
+          <button id="logout-btn" class="btn-icon" title="Logout" style="margin-left: 0.5rem; width: 32px; height: 32px; font-size: 0.9rem;">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN DASHBOARD CONTENT AREA -->
+    <div class="dashboard-layout">
+      
+      <!-- SIDEBAR NAVIGATION -->
+      <aside id="app-sidebar" class="sidebar" style="display: none;">
+        <div class="sidebar-menu" id="sidebar-menu-links">
+          <!-- Populated dynamically based on user role -->
+        </div>
+        <div class="sidebar-footer" style="font-size: 0.8rem; color: var(--text-secondary); text-align: center; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+          &copy; 2026 CSK Electronics
+        </div>
+      </aside>
+
+      <!-- VIEW VIEWS -->
+      <main class="main-content">
+
+        <!-- ================= AUTH VIEW ================= -->
+        <div id="view-auth" class="auth-page-wrapper view-section active">
+
+          <!-- TV BRAND ADVERTISEMENT PANEL -->
+          <div class="auth-brand-panel">
+            <div class="brand-panel-content">
+              <div class="brand-panel-logo">
+                <i class="fa-solid fa-tv"></i>
+                <span>CSK Electronics</span>
+              </div>
+              <h2 class="brand-panel-title">Trusted by All Leading TV Brands</h2>
+              <p class="brand-panel-sub">Expert repairs for every panel, board & display technology.</p>
+
+              <!-- BRAND LOGOS GRID (advertisement display) -->
+              <div class="brand-logos-grid">
+                <div class="brand-logo-item" title="Samsung">
+                  <div class="brand-logo-box" style="color:#1428A0;">
+                    <svg viewBox="0 0 100 30" width="90" height="28"><text x="2" y="24" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="currentColor">SAMSUNG</text></svg>
+                  </div>
+                  <span>Samsung</span>
+                </div>
+                <div class="brand-logo-item" title="Sony">
+                  <div class="brand-logo-box" style="color:#000;">
+                    <svg viewBox="0 0 60 30" width="60" height="28"><text x="2" y="24" font-family="Arial,sans-serif" font-size="22" font-weight="bold" fill="currentColor">SONY</text></svg>
+                  </div>
+                  <span>Sony</span>
+                </div>
+                <div class="brand-logo-item" title="LG">
+                  <div class="brand-logo-box" style="color:#A50034;">
+                    <svg viewBox="0 0 40 30" width="44" height="28"><text x="2" y="24" font-family="Arial Black,sans-serif" font-size="24" font-weight="900" fill="currentColor">LG</text></svg>
+                  </div>
+                  <span>LG</span>
+                </div>
+                <div class="brand-logo-item" title="Panasonic">
+                  <div class="brand-logo-box" style="color:#003087;">
+                    <svg viewBox="0 0 100 30" width="88" height="24"><text x="2" y="22" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="currentColor">Panasonic</text></svg>
+                  </div>
+                  <span>Panasonic</span>
+                </div>
+                <div class="brand-logo-item" title="TCL">
+                  <div class="brand-logo-box" style="color:#E4002B;">
+                    <svg viewBox="0 0 50 30" width="50" height="28"><text x="2" y="24" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="currentColor">TCL</text></svg>
+                  </div>
+                  <span>TCL</span>
+                </div>
+                <div class="brand-logo-item" title="Hisense">
+                  <div class="brand-logo-box" style="color:#FF6600;">
+                    <svg viewBox="0 0 80 30" width="75" height="24"><text x="2" y="22" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="currentColor">Hisense</text></svg>
+                  </div>
+                  <span>Hisense</span>
+                </div>
+                <div class="brand-logo-item" title="Philips">
+                  <div class="brand-logo-box" style="color:#0047BB;">
+                    <svg viewBox="0 0 75 30" width="70" height="24"><text x="2" y="22" font-family="Arial,sans-serif" font-size="18" font-weight="bold" fill="currentColor">Philips</text></svg>
+                  </div>
+                  <span>Philips</span>
+                </div>
+                <div class="brand-logo-item" title="Vu">
+                  <div class="brand-logo-box" style="color:#222;">
+                    <svg viewBox="0 0 36 30" width="36" height="28"><text x="2" y="24" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="currentColor">Vu</text></svg>
+                  </div>
+                  <span>Vu</span>
+                </div>
+                <div class="brand-logo-item" title="OnePlus">
+                  <div class="brand-logo-box" style="color:#F5010C;">
+                    <svg viewBox="0 0 82 30" width="78" height="24"><text x="2" y="22" font-family="Arial,sans-serif" font-size="17" font-weight="bold" fill="currentColor">OnePlus</text></svg>
+                  </div>
+                  <span>OnePlus</span>
+                </div>
+                <div class="brand-logo-item" title="Mi / Xiaomi">
+                  <div class="brand-logo-box" style="color:#FF6900;">
+                    <svg viewBox="0 0 30 30" width="30" height="28"><text x="2" y="24" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="currentColor">Mi</text></svg>
+                  </div>
+                  <span>Mi</span>
+                </div>
+              </div>
+
+              <!-- Scrolling ticker -->
+              <div class="brand-ticker-wrap">
+                <div class="brand-ticker">
+                  <span>📺 Samsung</span><span>📺 Sony</span><span>📺 LG</span>
+                  <span>📺 Panasonic</span><span>📺 TCL</span><span>📺 Hisense</span>
+                  <span>📺 Philips</span><span>📺 Vu</span><span>📺 OnePlus</span>
+                  <span>📺 Mi/Xiaomi</span><span>📺 Toshiba</span><span>📺 Haier</span>
+                  <!-- duplicate for seamless loop -->
+                  <span>📺 Samsung</span><span>📺 Sony</span><span>📺 LG</span>
+                  <span>📺 Panasonic</span><span>📺 TCL</span><span>📺 Hisense</span>
+                </div>
+              </div>
+
+              <div class="brand-panel-badges">
+                <div class="panel-badge"><i class="fa-solid fa-shield-check"></i> 90-Day Warranty</div>
+                <div class="panel-badge"><i class="fa-solid fa-bolt"></i> Fast Turnaround</div>
+                <div class="panel-badge"><i class="fa-solid fa-certificate"></i> Certified Techs</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- LOGIN / REGISTER CARD -->
+          <div class="auth-card">
+            <div class="auth-header">
+              <div style="display:flex; align-items:center; justify-content:center; gap:0.6rem; margin-bottom:0.5rem;">
+                <i class="fa-solid fa-tv" style="color:var(--accent-blue); font-size:1.5rem;"></i>
+                <h2 style="margin:0;">CSK Electronics</h2>
+              </div>
+              <p>Sign in or create your account</p>
+            </div>
+            
+            <div class="auth-tabs">
+              <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+              <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form">
+              <div class="form-group">
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" required placeholder="name@csk.com">
+              </div>
+              <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" required placeholder="••••••••">
+              </div>
+              <button type="submit" class="btn-primary">Sign In</button>
+              <div class="auth-demo-creds">
+                <p><strong>Demo Accounts:</strong></p>
+                <p>Admin: admin@csk.com / admin123</p>
+                <p>Tech: tech1@csk.com / tech123</p>
+                <p>Customer: cust1@csk.com / cust123</p>
+              </div>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" style="display: none;">
+              <div class="form-group">
+                <label for="reg-name">Full Name</label>
+                <input type="text" id="reg-name" required placeholder="John Doe">
+              </div>
+              <div class="form-group">
+                <label for="reg-email">Email Address</label>
+                <input type="email" id="reg-email" required placeholder="john@example.com">
+              </div>
+              <div class="form-group">
+                <label for="reg-phone">Phone Number</label>
+                <input type="tel" id="reg-phone" required placeholder="9876543210">
+              </div>
+              <div class="form-group">
+                <label for="reg-address">Detailed Address</label>
+                <textarea id="reg-address" required placeholder="123 Main St, Bangalore"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="reg-password">Password</label>
+                <input type="password" id="reg-password" required placeholder="Minimum 6 characters">
+              </div>
+              <button type="submit" class="btn-primary">Register Account</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- ================= ADMIN VIEWS ================= -->
+        
+        <!-- Admin Dashboard Stats -->
+        <div id="view-admin-dashboard" class="view-section">
+          <div class="view-header">
+            <h2>Admin Dashboard</h2>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+              <div class="stat-info">
+                <h4>Total Customers</h4>
+                <div class="value" id="stat-admin-customers">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-user-gear"></i></div>
+              <div class="stat-info">
+                <h4>Total Technicians</h4>
+                <div class="value" id="stat-admin-technicians">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-wrench"></i></div>
+              <div class="stat-info">
+                <h4>Active Repairs</h4>
+                <div class="value" id="stat-admin-active">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <h4>Completed Repairs</h4>
+                <div class="value" id="stat-admin-completed">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>Pending Repairs</h4>
+                <div class="value" id="stat-admin-pending">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon revenue"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+              <div class="stat-info">
+                <h4>Total Revenue</h4>
+                <div class="value" id="stat-admin-revenue">₹0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Admin Service Requests -->
+        <div id="view-admin-requests" class="view-section">
+          <div class="view-header">
+            <h2>Service Repair Requests</h2>
+          </div>
+          <div class="table-card">
+            <div class="table-header">
+              <h3>All Repair Requests</h3>
+              <div class="table-search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="search-admin-requests" placeholder="Search by Brand, Model, Customer..." onkeyup="filterAdminRequests()">
+              </div>
+            </div>
+            <table id="admin-requests-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Customer Name</th>
+                  <th>TV Brand & Model</th>
+                  <th>Problem Description</th>
+                  <th>Assigned Tech</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Admin Manage Users -->
+        <div id="view-admin-users" class="view-section">
+          <div class="view-header">
+            <h2>User Administration</h2>
+            <button class="btn-primary" style="width: auto;" onclick="openCreateUserModal()">
+              <i class="fa-solid fa-plus" style="margin-right: 0.5rem;"></i>Add Technician/Customer
+            </button>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <h3>Registered Users</h3>
+            </div>
+            <table id="admin-users-table">
+              <thead>
+                <tr>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Role</th>
+                  <th>Details/Address</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= TECHNICIAN VIEWS ================= -->
+
+        <div id="view-tech-dashboard" class="view-section">
+          <div class="view-header">
+            <h2>Technician Dashboard</h2>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-list-check"></i></div>
+              <div class="stat-info">
+                <h4>Assigned Jobs</h4>
+                <div class="value" id="stat-tech-assigned">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>Pending Jobs</h4>
+                <div class="value" id="stat-tech-pending">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <h4>Completed Jobs</h4>
+                <div class="value" id="stat-tech-completed">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <h3>Your Service Requests</h3>
+            </div>
+            <table id="tech-requests-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Customer Details</th>
+                  <th>TV Brand & Model</th>
+                  <th>Problem</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= CUSTOMER VIEWS ================= -->
+
+        <!-- Customer Live Tracking & Complaints -->
+        <div id="view-customer-dashboard" class="view-section">
+          <div class="view-header">
+            <h2>Welcome, <span id="customer-name-header">Valued Customer</span></h2>
+            <button class="btn-primary" style="width: auto;" onclick="openComplaintModal()">
+              <i class="fa-solid fa-plus" style="margin-right: 0.5rem;"></i>Register New TV Complaint
+            </button>
+          </div>
+
+          <!-- Active Tracker Card (Only shows if there is an active repair request) -->
+          <div id="customer-active-repair-card" class="table-card" style="margin-bottom: 2rem; padding: 2rem; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1rem;">
+              <h3 style="font-size: 1.25rem;"><i class="fa-solid fa-clock-rotate-left" style="color: var(--accent-blue); margin-right: 0.5rem;"></i>Active Repair Tracker: <span id="track-request-id" style="color: var(--accent-blue);">REQ-000</span></h3>
+              <span id="track-request-status-badge" class="badge badge-new">New</span>
+            </div>
+
+            <div class="timeline" id="repair-timeline">
+              <div class="timeline-step" id="step-new">
+                <div class="timeline-icon">1</div>
+                <div class="timeline-label">New</div>
+              </div>
+              <div class="timeline-step" id="step-assigned">
+                <div class="timeline-icon">2</div>
+                <div class="timeline-label">Assigned</div>
+              </div>
+              <div class="timeline-step" id="step-waiting">
+                <div class="timeline-icon">3</div>
+                <div class="timeline-label">Waiting Approval</div>
+              </div>
+              <div class="timeline-step" id="step-repair">
+                <div class="timeline-icon">4</div>
+                <div class="timeline-label">Repair In Progress</div>
+              </div>
+              <div class="timeline-step" id="step-completed">
+                <div class="timeline-icon">5</div>
+                <div class="timeline-label">Completed</div>
+              </div>
+              <div class="timeline-step" id="step-invoice">
+                <div class="timeline-icon">6</div>
+                <div class="timeline-label">Invoice Generated</div>
+              </div>
+            </div>
+
+            <!-- Double Column layout for TV Details & Technician Remarks -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 2rem;">
+              <div style="background-color: var(--bg-primary); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color);">
+                <h4 style="margin-bottom: 0.75rem; color: var(--accent-blue);"><i class="fa-solid fa-tv"></i> TV Information</h4>
+                <p><strong>Brand:</strong> <span id="track-tv-brand">Samsung</span></p>
+                <p><strong>Model:</strong> <span id="track-tv-model">Neo QLED</span></p>
+                <p><strong>Reported Problem:</strong> <span id="track-tv-problem">Flickering display</span></p>
+                <p style="margin-top: 1rem;"><strong>Assigned Technician:</strong> <span id="track-tech-name">Alex Mercer</span></p>
+                <p><strong>Contact:</strong> <span id="track-tech-phone">-</span></p>
+              </div>
+
+              <div style="background-color: var(--bg-primary); padding: 1.25rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h4 style="margin-bottom: 0.75rem; color: var(--accent-blue);"><i class="fa-solid fa-notes-medical"></i> Inspection Remarks</h4>
+                  <p id="track-estimate-remarks" style="font-style: italic; color: var(--text-secondary);">No inspection remarks yet.</p>
+                </div>
+                
+                <!-- Action section (Estimate response / Invoice download) -->
+                <div id="customer-action-box" style="margin-top: 1rem;">
+                  <!-- Dynamically filled with Approve/Reject buttons or Download Invoice -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Activity Logs list -->
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+              <h4><i class="fa-solid fa-bars-staggered"></i> Live Repair Activity Logs</h4>
+              <div class="updates-list" id="track-activity-logs">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer Service Request History -->
+          <div class="table-card">
+            <div class="table-header">
+              <h3>Your Service Requests & Invoices</h3>
+            </div>
+            <table id="customer-requests-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>TV Brand & Model</th>
+                  <th>Problem</th>
+                  <th>Date Registered</th>
+                  <th>Status</th>
+                  <th>Invoice Link</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container"></div>
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- MODAL: REGISTER COMPLAINT (CUSTOMER) -->
+  <div id="modal-complaint" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Register TV Repair Request</h3>
+        <button class="btn-icon" onclick="closeModal('modal-complaint')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="complaint-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="tv-brand">TV Brand</label>
+            <input type="text" id="tv-brand" required placeholder="Sony, Samsung, LG, TCL etc.">
+          </div>
+          <div class="form-group">
+            <label for="tv-model">TV Model Number / Name</label>
+            <input type="text" id="tv-model" required placeholder="e.g. KD-55X7500H or OLED65C1PUB">
+          </div>
+          <div class="form-group">
+            <label for="tv-problem">Problem Description</label>
+            <textarea id="tv-problem" required placeholder="Describe what is wrong with the TV (e.g. display is black but sound works, vertical green line, etc.)"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-complaint')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Submit Repair Request</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CREATE USER (ADMIN) -->
+  <div id="modal-create-user" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New User Profile</h3>
+        <button class="btn-icon" onclick="closeModal('modal-create-user')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="admin-create-user-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="user-role">User System Role</label>
+            <select id="user-role" required onchange="toggleSpecializationField()">
+              <option value="customer">Customer</option>
+              <option value="technician">Technician</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="user-name">Full Name</label>
+            <input type="text" id="user-name" required placeholder="Full Name">
+          </div>
+          <div class="form-group">
+            <label for="user-email">Email Address</label>
+            <input type="email" id="user-email" required placeholder="name@csk.com">
+          </div>
+          <div class="form-group">
+            <label for="user-phone">Phone Number</label>
+            <input type="tel" id="user-phone" required placeholder="Contact number">
+          </div>
+          <div class="form-group" id="field-user-address">
+            <label for="user-address">Billing/Delivery Address</label>
+            <textarea id="user-address" placeholder="Residential Address"></textarea>
+          </div>
+          <div class="form-group" id="field-user-specialization" style="display: none;">
+            <label for="user-specialization">Technical Specialization</label>
+            <input type="text" id="user-specialization" placeholder="e.g. Smart LED Boards, QLED Panels">
+          </div>
+          <div class="form-group">
+            <label for="user-password">Initial Password</label>
+            <input type="password" id="user-password" required placeholder="Initial security password">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-create-user')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Register User</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ASSIGN TECHNICIAN (ADMIN) -->
+  <div id="modal-assign-tech" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="assign-modal-title">Assign Technician to Request</h3>
+        <button class="btn-icon" onclick="closeModal('modal-assign-tech')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="admin-assign-form">
+        <input type="hidden" id="assign-request-id">
+        <div class="modal-body">
+          <div style="background-color: var(--bg-primary); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+            <p><strong>Request ID:</strong> <span id="assign-info-request">REQ-000</span></p>
+            <p><strong>TV Details:</strong> <span id="assign-info-tv">Samsung Neo QLED</span></p>
+            <p><strong>Problem:</strong> <span id="assign-info-problem">Display flickering</span></p>
+            <p><strong>Customer:</strong> <span id="assign-info-customer">—</span></p>
+          </div>
+          <div id="assign-current-tech-box" style="display:none; background-color: var(--accent-warning-light); border: 1px solid var(--accent-warning); border-radius:12px; padding: 0.85rem 1rem; margin-bottom:1.25rem;">
+            <p style="font-size:0.875rem;"><i class="fa-solid fa-user-gear" style="color:var(--accent-warning);"></i> <strong>Currently Assigned:</strong> <span id="assign-current-tech-name" style="color:var(--accent-warning); font-weight:700;">Alex Mercer</span></p>
+            <p style="font-size:0.78rem; color:var(--text-secondary); margin-top:0.25rem;">Selecting a different technician below will re-assign this request.</p>
+          </div>
+          <div class="form-group">
+            <label for="select-technician">Select Technician</label>
+            <select id="select-technician" required>
+              <!-- Populated dynamically -->
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-assign-tech')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;" id="assign-confirm-btn">Confirm Assignment</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SUBMIT INSPECTION ESTIMATE (TECHNICIAN) -->
+  <div id="modal-tech-estimate" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Submit Service Repair Estimate</h3>
+        <button class="btn-icon" onclick="closeModal('modal-tech-estimate')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="tech-estimate-form">
+        <input type="hidden" id="estimate-request-id">
+        <div class="modal-body">
+          <div style="background-color: var(--bg-primary); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+            <p><strong>Customer:</strong> <span id="est-info-customer">John Doe</span></p>
+            <p><strong>TV:</strong> <span id="est-info-tv">Sony Bravia</span></p>
+            <p><strong>Problem Reported:</strong> <span id="est-info-problem">Flickering Screen</span></p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="est-inspection">Inspection Charge (₹)</label>
+              <input type="number" id="est-inspection" required min="0" value="500" oninput="calculateEstimateTotal()">
+            </div>
+            <div class="form-group">
+              <label for="est-spare">Spare Parts Cost (₹)</label>
+              <input type="number" id="est-spare" required min="0" value="0" oninput="calculateEstimateTotal()">
+            </div>
+            <div class="form-group">
+              <label for="est-labour">Labour Charges (₹)</label>
+              <input type="number" id="est-labour" required min="0" value="0" oninput="calculateEstimateTotal()">
+            </div>
+            <div class="form-group">
+              <label for="est-additional">Additional Charges (₹)</label>
+              <input type="number" id="est-additional" required min="0" value="0" oninput="calculateEstimateTotal()">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="est-notes">Inspection & Diagnosis Findings</label>
+            <textarea id="est-notes" required placeholder="Detail what faults were found during testing..."></textarea>
+          </div>
+          
+          <div style="background-color: var(--accent-blue-light); color: var(--accent-blue); padding: 1rem; border-radius: 12px; text-align: right; font-weight: 700; font-size: 1.25rem;">
+            Total Estimated Amount: ₹<span id="est-total-calc">500</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-tech-estimate')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Submit Estimate to Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: COMPLETE REPAIR & BILL (TECHNICIAN) -->
+  <div id="modal-tech-complete" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Complete Repair & Generate Invoice</h3>
+        <button class="btn-icon" onclick="closeModal('modal-tech-complete')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="tech-complete-form">
+        <input type="hidden" id="complete-request-id">
+        <div class="modal-body">
+          <div style="background-color: var(--bg-primary); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; border: 1px solid var(--border-color);">
+            <p><strong>Customer:</strong> <span id="comp-info-customer">John Doe</span></p>
+            <p><strong>TV Details:</strong> <span id="comp-info-tv">Sony Bravia</span></p>
+            <p><strong>Approved Estimate:</strong> ₹<span id="comp-info-estimate">0</span></p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label for="comp-inspection">Final Inspection (₹)</label>
+              <input type="number" id="comp-inspection" required min="0" oninput="calculateCompleteTotal()">
+            </div>
+            <div class="form-group">
+              <label for="comp-spare">Final Spares Cost (₹)</label>
+              <input type="number" id="comp-spare" required min="0" oninput="calculateCompleteTotal()">
+            </div>
+            <div class="form-group">
+              <label for="comp-labour">Final Labour Cost (₹)</label>
+              <input type="number" id="comp-labour" required min="0" oninput="calculateCompleteTotal()">
+            </div>
+            <div class="form-group">
+              <label for="comp-additional">Final Additional Cost (₹)</label>
+              <input type="number" id="comp-additional" required min="0" oninput="calculateCompleteTotal()">
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="comp-notes">Final Technical Repair Notes</label>
+            <textarea id="comp-notes" required placeholder="Detail the repairs performed, spares replaced, and final checks made..."></textarea>
+          </div>
+          
+          <div style="background-color: var(--accent-success-light); color: var(--accent-success); padding: 1rem; border-radius: 12px; text-align: right; font-weight: 700; font-size: 1.25rem;">
+            Total Final Billing: ₹<span id="comp-total-calc">0</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-tech-complete')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto; background: linear-gradient(135deg, var(--accent-success) 0%, #047857 100%); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);">Generate Final Bill</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW DETAILS/LOGS (ADMIN/TECH GENERAL) -->
+  <div id="modal-request-details" class="modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Request Detailed Log & History</h3>
+        <button class="btn-icon" onclick="closeModal('modal-request-details')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+          <div style="background-color: var(--bg-primary); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h4 style="margin-bottom: 0.5rem; color: var(--accent-blue);">Request details</h4>
+            <p><strong>ID:</strong> <span id="det-req-id">-</span></p>
+            <p><strong>Status:</strong> <span id="det-req-status" class="badge badge-new">New</span></p>
+            <p><strong>Date:</strong> <span id="det-req-date">-</span></p>
+            <p><strong>TV:</strong> <span id="det-req-tv">-</span></p>
+            <p><strong>Problem:</strong> <span id="det-req-problem">-</span></p>
+          </div>
+          <div style="background-color: var(--bg-primary); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color);">
+            <h4 style="margin-bottom: 0.5rem; color: var(--accent-blue);">Customer & Technician</h4>
+            <p><strong>Customer:</strong> <span id="det-cust-name">-</span></p>
+            <p><strong>Contact:</strong> <span id="det-cust-phone">-</span></p>
+            <p><strong>Address:</strong> <span id="det-cust-address">-</span></p>
+            <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid var(--border-color);">
+            <p><strong>Technician:</strong> <span id="det-tech-name">-</span></p>
+          </div>
+        </div>
+
+        <div id="det-estimate-box" style="background-color: var(--accent-warning-light); color: var(--text-primary); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; display: none; border: 1px solid var(--accent-warning);">
+          <h4 style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+            <span>Estimated Quote</span>
+            <span id="det-est-status" class="badge">Pending</span>
+          </h4>
+          <p>Inspection: ₹<span id="det-est-inspection">0</span> | Spares: ₹<span id="det-est-spares">0</span> | Labour: ₹<span id="det-est-labour">0</span> | Addl: ₹<span id="det-est-addl">0</span></p>
+          <p><strong>Total Estimate:</strong> ₹<span id="det-est-total">0</span></p>
+          <p><strong>Diagnosis Notes:</strong> <span id="det-est-notes">-</span></p>
+        </div>
+
+        <div id="det-invoice-box" style="background-color: var(--accent-success-light); color: var(--text-primary); padding: 1rem; border-radius: 12px; margin-bottom: 1.5rem; display: none; border: 1px solid var(--accent-success);">
+          <h4 style="margin-bottom: 0.5rem; display: flex; justify-content: space-between;">
+            <span>Final Invoice generated</span>
+            <button class="btn-primary" style="padding: 0.25rem 0.75rem; width: auto; font-size: 0.75rem;" onclick="printInvoiceFromDetails()"><i class="fa-solid fa-print"></i> Print Invoice</button>
+          </h4>
+          <p><strong>Invoice Number:</strong> <span id="det-inv-num">-</span></p>
+          <p><strong>Total Amount Billed:</strong> ₹<span id="det-inv-total">0</span></p>
+          <p><strong>Technical Notes:</strong> <span id="det-inv-notes">-</span></p>
+        </div>
+
+        <div>
+          <h4>Logs History Timeline</h4>
+          <div class="updates-list" id="det-history-logs">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-request-details')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= PRINT AREA (INVOICE GENERATOR) ================= -->
+  <div id="print-area">
+    <div class="invoice-container">
+      <div class="invoice-brand">
+        <div>
+          <h2>CSK Electronics Services</h2>
+          <p>Expert TV Repair, Spares & Board Services</p>
+          <p>1800-456-7890 | support@cskelectronics.com</p>
+        </div>
+        <div style="text-align: right;">
+          <h3 style="font-size: 1.5rem; color: #64748b;" id="prt-inv-title">TAX INVOICE</h3>
+          <p><strong>Invoice #:</strong> <span id="prt-invoice-number">INV-10001</span></p>
+          <p><strong>Date:</strong> <span id="prt-invoice-date">2026-06-23</span></p>
+        </div>
+      </div>
+
+      <div class="invoice-meta">
+        <div>
+          <div class="invoice-section-title">Customer Information</div>
+          <p><strong>Name:</strong> <span id="prt-cust-name">John Doe</span></p>
+          <p><strong>Contact:</strong> <span id="prt-cust-phone">9876543210</span></p>
+          <p><strong>Address:</strong> <span id="prt-cust-address">123 Main Street, Bangalore</span></p>
+        </div>
+        <div>
+          <div class="invoice-section-title">Service Details</div>
+          <p><strong>Request ID:</strong> <span id="prt-request-id">REQ-1002</span></p>
+          <p><strong>TV Model:</strong> <span id="prt-tv-model">Sony Bravia OLED 65"</span></p>
+          <p><strong>Reported Issue:</strong> <span id="prt-problem">No power, red light blinking</span></p>
+          <p><strong>Assigned Engineer:</strong> <span id="prt-tech-name">Alex Mercer</span></p>
+        </div>
+      </div>
+
+      <div class="invoice-section-title">Technical Inspection Notes</div>
+      <div style="background-color: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-style: italic; border: 1px solid #e2e8f0;" id="prt-tech-notes">
+        Motherboard repair and power supply diodes replacement completed. Run tested for 2 hours.
+      </div>
+
+      <div class="invoice-section-title">Billing Breakdown</div>
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>Description of Charges</th>
+            <th style="text-align: right; width: 200px;">Amount (INR)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Standard TV Panel / Board Inspection Fee</td>
+            <td style="text-align: right;" id="prt-charge-inspect">₹500.00</td>
+          </tr>
+          <tr>
+            <td>Required Spare Parts / Semiconductors Replacing Cost</td>
+            <td style="text-align: right;" id="prt-charge-spares">₹3,500.00</td>
+          </tr>
+          <tr>
+            <td>Labour charges (Component Micro-Soldering & Fitting)</td>
+            <td style="text-align: right;" id="prt-charge-labour">₹1,500.00</td>
+          </tr>
+          <tr>
+            <td>Additional / Transport & Setup Cost</td>
+            <td style="text-align: right;" id="prt-charge-addl">₹200.00</td>
+          </tr>
+          <tr class="invoice-total-row">
+            <td>Grand Total Amount</td>
+            <td style="text-align: right;" id="prt-total">₹5,700.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="invoice-signature">
+        <div>
+          <div style="font-size: 0.8rem; color: #64748b;">Terms: Warranty on replaced board spares is valid for 90 days.</div>
+          <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.25rem;">This is a computer-generated billing statement.</div>
+        </div>
+        <div style="display: flex; gap: 2rem;">
+          <div class="signature-line">
+            Customer Signature
+          </div>
+          <div class="signature-line">
+            Authorized Signatory
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
