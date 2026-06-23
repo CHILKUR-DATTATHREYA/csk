@@ -194,10 +194,26 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     localStorage.setItem('csk_token', token);
     localStorage.setItem('csk_user', JSON.stringify(currentUser));
     
-    showToast(`Welcome back, ${currentUser.name}!`, 'success');
+    // Trigger login transition overlay with logo animation
+    const overlay = document.getElementById('login-transition-overlay');
+    if (overlay) {
+      overlay.classList.add('active');
+    }
+    
     setupHeader();
     connectSSE();
-    routeToDashboard();
+    
+    setTimeout(() => {
+      showToast(`Welcome back, ${currentUser.name}!`, 'success');
+      
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+      
+      setTimeout(() => {
+        routeToDashboard();
+      }, 500); // wait for opacity fade transition
+    }, 2200);
   } catch (err) {
     // Error is handled in apiCall wrapper
   }
