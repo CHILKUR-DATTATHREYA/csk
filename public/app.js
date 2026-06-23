@@ -18,6 +18,9 @@ window.addEventListener('DOMContentLoaded', () => {
   document.documentElement.setAttribute('data-theme', savedTheme);
   updateThemeIcon(savedTheme);
 
+  // Skip long intro if user is already logged in
+  const introDuration = (token && currentUser) ? 800 : 3500;
+
   setTimeout(() => {
     const intro = document.getElementById('intro-screen');
     const appContainer = document.getElementById('app-container');
@@ -39,7 +42,7 @@ window.addEventListener('DOMContentLoaded', () => {
         showView('auth');
       }
     }, 500);
-  }, 3500); // 3.5 seconds intro animation
+  }, introDuration);
 });
 
 // ROUTING
@@ -733,6 +736,12 @@ async function printInvoice(requestId) {
     if (!req.invoice) {
       return showToast("Invoice is not generated yet for this repair request.", "warning");
     }
+
+    // Intercept if customer views/downloads and hasn't signed digitally yet
+    if (currentUser && currentUser.role === 'customer' && !req.invoice.customerSignature) {
+      openSignaturePad(req.invoice.id, req.id);
+      return;
+    }
     
     // Populate Printable Area
     document.getElementById('prt-invoice-number').innerText = req.invoice.id;
@@ -755,11 +764,143 @@ async function printInvoice(requestId) {
     document.getElementById('prt-charge-labour').innerText = `₹${req.invoice.labourCharges.toFixed(2)}`;
     document.getElementById('prt-charge-addl').innerText = `₹${req.invoice.additionalCharges.toFixed(2)}`;
     document.getElementById('prt-total').innerText = `₹${req.invoice.totalAmount.toFixed(2)}`;
+
+    // Populate Customer Signature base64 if present
+    const sigImg = document.getElementById('prt-customer-signature');
+    const sigPlaceholder = document.getElementById('prt-customer-sig-placeholder');
+    if (req.invoice.customerSignature) {
+      sigImg.src = req.invoice.customerSignature;
+      sigImg.style.display = 'block';
+      sigPlaceholder.style.display = 'none';
+    } else {
+      sigImg.src = '';
+      sigImg.style.display = 'none';
+      sigPlaceholder.style.display = 'block';
+    }
     
     // Trigger Print
     window.print();
   } catch (err) {}
 }
+
+// ================= DIGITAL SIGNATURE PAD CONTROLS =================
+let signaturePadCanvas = null;
+let signaturePadCtx = null;
+let isDrawingSignature = false;
+let currentSigningInvoiceId = null;
+let currentSigningRequestId = null;
+
+function initSignaturePad() {
+  signaturePadCanvas = document.getElementById('signature-canvas');
+  if (!signaturePadCanvas) return;
+  signaturePadCtx = signaturePadCanvas.getContext('2d');
+  
+  // Set drawing stroke styles
+  signaturePadCtx.strokeStyle = '#1e3a8a'; // Deep blue signature ink
+  signaturePadCtx.lineWidth = 3;
+  signaturePadCtx.lineCap = 'round';
+  signaturePadCtx.lineJoin = 'round';
+  
+  // Mouse listeners
+  signaturePadCanvas.addEventListener('mousedown', startDrawing);
+  signaturePadCanvas.addEventListener('mousemove', draw);
+  signaturePadCanvas.addEventListener('mouseup', stopDrawing);
+  signaturePadCanvas.addEventListener('mouseleave', stopDrawing);
+  
+  // Touch listeners for mobile devices
+  signaturePadCanvas.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length > 0) {
+      const touch = e.touches[0];
+      const rect = signaturePadCanvas.getBoundingClientRect();
+      signaturePadCtx.beginPath();
+      signaturePadCtx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      isDrawingSignature = true;
+    }
+  }, { passive: false });
+  
+  signaturePadCanvas.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!isDrawingSignature || e.touches.length === 0) return;
+    const touch = e.touches[0];
+    const rect = signaturePadCanvas.getBoundingClientRect();
+    signaturePadCtx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    signaturePadCtx.stroke();
+  }, { passive: false });
+  
+  signaturePadCanvas.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    isDrawingSignature = false;
+  }, { passive: false });
+}
+
+function startDrawing(e) {
+  isDrawingSignature = true;
+  const rect = signaturePadCanvas.getBoundingClientRect();
+  signaturePadCtx.beginPath();
+  signaturePadCtx.moveTo(e.clientX - rect.left, e.clientY - rect.top);
+}
+
+function draw(e) {
+  if (!isDrawingSignature) return;
+  const rect = signaturePadCanvas.getBoundingClientRect();
+  signaturePadCtx.lineTo(e.clientX - rect.left, e.clientY - rect.top);
+  signaturePadCtx.stroke();
+}
+
+function stopDrawing() {
+  isDrawingSignature = false;
+}
+
+function clearSignaturePad() {
+  if (!signaturePadCanvas) return;
+  signaturePadCtx.clearRect(0, 0, signaturePadCanvas.width, signaturePadCanvas.height);
+}
+
+function openSignaturePad(invoiceId, requestId) {
+  currentSigningInvoiceId = invoiceId;
+  currentSigningRequestId = requestId;
+  openModal('modal-signature-pad');
+  
+  if (!signaturePadCanvas) {
+    initSignaturePad();
+  }
+  clearSignaturePad();
+}
+
+async function saveCustomerSignature() {
+  if (!signaturePadCanvas || !currentSigningInvoiceId) return;
+  
+  if (isCanvasBlank(signaturePadCanvas)) {
+    return showToast("Please draw your signature before saving.", "warning");
+  }
+  
+  const signatureDataUrl = signaturePadCanvas.toDataURL('image/png');
+  
+  try {
+    await apiCall(`/invoice/${currentSigningInvoiceId}/sign`, 'POST', { signature: signatureDataUrl });
+    showToast("Invoice signed successfully!", "success");
+    closeModal('modal-signature-pad');
+    
+    // Reload dashboard list
+    if (currentUser.role === 'customer') {
+      await loadCustomerDashboard();
+    }
+    
+    // Print the updated invoice
+    await printInvoice(currentSigningRequestId);
+  } catch (err) {
+    showToast("Failed to save signature. Please try again.", "danger");
+  }
+}
+
+function isCanvasBlank(canvas) {
+  const blank = document.createElement('canvas');
+  blank.width = canvas.width;
+  blank.height = canvas.height;
+  return canvas.toDataURL() === blank.toDataURL();
+}
+
 
 async function viewRequestDetails(requestId) {
   try {

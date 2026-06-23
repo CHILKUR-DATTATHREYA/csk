@@ -504,6 +504,8 @@ app.post('/api/technician/complete', authenticateToken, requireRole(['technician
     additionalCharges: additional,
     totalAmount: total,
     notes: technicianNotes || 'TV repaired successfully.',
+    customerSignature: null,   // filled when customer signs digitally
+    signedAt: null,
     createdAt: new Date().toISOString()
   };
   
@@ -582,6 +584,30 @@ app.post('/api/requests/:id/close', authenticateToken, (req, res) => {
   });
   
   res.json({ message: 'Request closed successfully', request });
+});
+
+// CUSTOMER DIGITAL SIGNATURE ON INVOICE
+app.post('/api/invoice/:id/sign', authenticateToken, requireRole(['customer']), (req, res) => {
+  const { signature } = req.body;
+  if (!signature) return res.status(400).json({ error: 'Signature data is required' });
+  
+  const data = db.getData();
+  const invoice = data.invoices.find(i => i.id === req.params.id);
+  if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
+  if (invoice.customerId !== req.user.id) return res.status(403).json({ error: 'Unauthorized' });
+  
+  invoice.customerSignature = signature;  // base64 PNG data URL
+  invoice.signedAt = new Date().toISOString();
+  db.saveData(data);
+  
+  broadcast('INVOICE_SIGNED', `Customer ${req.user.name} has digitally signed Invoice ${invoice.id}.`, {
+    invoiceId: invoice.id,
+    requestId: invoice.requestId,
+    customerId: invoice.customerId,
+    technicianId: invoice.technicianId
+  });
+  
+  res.json({ message: 'Signature saved successfully', invoice });
 });
 
 // START SERVER

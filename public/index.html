@@ -851,14 +851,66 @@
           <div style="font-size: 0.8rem; color: #64748b;">Terms: Warranty on replaced board spares is valid for 90 days.</div>
           <div style="font-size: 0.8rem; color: #64748b; margin-top: 0.25rem;">This is a computer-generated billing statement.</div>
         </div>
-        <div style="display: flex; gap: 2rem;">
-          <div class="signature-line">
+        <div style="display: flex; gap: 2rem; align-items: flex-end;">
+
+          <!-- CUSTOMER SIGNATURE BOX -->
+          <div class="signature-line" style="min-width:200px; text-align:center;">
+            <div id="prt-customer-sig-container" style="height:80px; display:flex; align-items:center; justify-content:center; border-bottom: 1.5px solid #cbd5e1; margin-bottom:0.35rem;">
+              <img id="prt-customer-signature" src="" alt="Customer Signature" style="display:none; max-height:75px; max-width:190px; object-fit:contain;">
+              <span id="prt-customer-sig-placeholder" style="font-size:0.75rem; color:#94a3b8; font-style:italic;">Awaiting Customer Signature</span>
+            </div>
             Customer Signature
           </div>
-          <div class="signature-line">
+
+          <!-- CSK AUTHORIZED STAMP -->
+          <div class="signature-line" style="min-width:200px; text-align:center;">
+            <div style="height:80px; display:flex; align-items:center; justify-content:center; border-bottom: 1.5px solid #cbd5e1; margin-bottom:0.35rem;">
+              <div class="csk-stamp">
+                <div class="csk-stamp-ring">
+                  <div class="csk-stamp-inner">
+                    <div class="csk-stamp-name">CSK</div>
+                    <div class="csk-stamp-sub">ELECTRONICS</div>
+                    <div class="csk-stamp-auth">AUTHORIZED</div>
+                  </div>
+                </div>
+              </div>
+            </div>
             Authorized Signatory
           </div>
+
         </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: CUSTOMER DIGITAL SIGNATURE PAD -->
+  <div id="modal-signature-pad" class="modal">
+    <div class="modal-card" style="max-width:620px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-pen-nib" style="color:var(--accent-blue); margin-right:0.5rem;"></i>Sign the Invoice</h3>
+        <button class="btn-icon" onclick="closeModal('modal-signature-pad')" style="width:32px;height:32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div style="background:var(--accent-blue-light); border:1px solid var(--accent-blue); border-radius:12px; padding:1rem; margin-bottom:1.5rem;">
+          <p style="font-size:0.875rem;"><i class="fa-solid fa-circle-info" style="color:var(--accent-blue);"></i> &nbsp;Please <strong>draw your signature</strong> in the box below to confirm receipt of your repaired TV. Your signature will appear on the final invoice.</p>
+        </div>
+
+        <div style="text-align:center;">
+          <div style="font-size:0.78rem; color:var(--text-secondary); margin-bottom:0.6rem; letter-spacing:0.3px;">Draw your signature using mouse or finger</div>
+          <div class="sig-canvas-wrap">
+            <canvas id="signature-canvas" width="540" height="180"></canvas>
+          </div>
+          <button onclick="clearSignaturePad()" class="btn-secondary" style="margin-top:0.75rem; padding:0.4rem 1.25rem; font-size:0.85rem;">
+            <i class="fa-solid fa-eraser"></i> Clear
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal('modal-signature-pad')">Cancel</button>
+        <button class="btn-primary" style="width:auto;" onclick="saveCustomerSignature()">
+          <i class="fa-solid fa-signature"></i> Save Signature &amp; View Invoice
+        </button>
       </div>
     </div>
   </div>
