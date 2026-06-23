@@ -21,7 +21,7 @@ A modern, full-stack Single Page Application (SPA) designed to streamline TV rep
 
 ### 🔑 Login Page
 Includes active brand advertisements and demo credentials box.
-![Login Screen](screenshots/login.png)
+![Login Screen](screenshots/login_page.png)
 
 ### 🎬 Animated Login Transition
 Cinematic zoom, rotate, and pulse transition showing the CSK logo.
