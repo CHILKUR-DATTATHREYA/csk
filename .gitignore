@@ -2,3 +2,6 @@ node_modules/
 db.json
 *.log
 .env
+firebase-service-account.json
+public/firebase-config.json
+public/firebase-config-temp.json

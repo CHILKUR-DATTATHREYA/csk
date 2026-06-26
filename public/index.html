@@ -46,6 +46,9 @@
           <i class="fa-solid fa-user-circle" style="font-size: 1.25rem;"></i>
           <span id="user-display-name">User</span>
           <span id="user-display-role" class="role">Role</span>
+          <button id="change-password-trigger-btn" class="btn-icon" title="Change Password" style="margin-left: 0.5rem; width: 32px; height: 32px; font-size: 0.9rem;" onclick="openModal('modal-change-password')">
+            <i class="fa-solid fa-key"></i>
+          </button>
           <button id="logout-btn" class="btn-icon" title="Logout" style="margin-left: 0.5rem; width: 32px; height: 32px; font-size: 0.9rem;">
             <i class="fa-solid fa-right-from-bracket"></i>
           </button>
@@ -188,9 +191,12 @@
                 <label for="login-email">Email Address</label>
                 <input type="email" id="login-email" required placeholder="name@csk.com">
               </div>
-              <div class="form-group">
+              <div class="form-group" style="margin-bottom: 0.5rem;">
                 <label for="login-password">Password</label>
                 <input type="password" id="login-password" required placeholder="••••••••">
+              </div>
+              <div class="form-group" style="text-align: right; margin-bottom: 1.5rem;">
+                <a href="#" onclick="showForgotPasswordForm(event)" class="forgot-password-link" style="color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 500;">Forgot Password?</a>
               </div>
               <button type="submit" class="btn-primary">Sign In</button>
               <div class="auth-demo-creds">
@@ -198,6 +204,21 @@
                 <p>Admin: admin@csk.com / admin123</p>
                 <p>Tech: tech1@csk.com / tech123</p>
                 <p>Customer: cust1@csk.com / cust123</p>
+              </div>
+            </form>
+
+            <!-- Forgot Password Form -->
+            <form id="forgot-password-form" style="display: none;" onsubmit="handleForgotPassword(event)">
+              <div style="margin-bottom: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+                Enter your email address and we will send a temporary password to your registered email and mobile number.
+              </div>
+              <div class="form-group">
+                <label for="forgot-email">Email Address</label>
+                <input type="email" id="forgot-email" required placeholder="name@csk.com">
+              </div>
+              <button type="submit" class="btn-primary" style="margin-bottom: 1rem;">Reset Password</button>
+              <div style="text-align: center; margin-top: 0.5rem;">
+                <a href="#" onclick="cancelForgotPassword(event)" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
               </div>
             </form>
 
@@ -336,6 +357,130 @@
                   <th>Phone</th>
                   <th>Role</th>
                   <th>Details/Address</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Admin Email Settings -->
+        <div id="view-admin-email-settings" class="view-section">
+          <div class="view-header">
+            <h2>Email & SMTP Settings</h2>
+          </div>
+          
+          <!-- WARNING: Shown when ethereal (dummy) host is still set -->
+          <div id="smtp-host-warning" style="display:none; align-items:center; gap:1rem; background:#fef3c7; border:1.5px solid #f59e0b; border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem; max-width:800px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color:#f59e0b; font-size:1.5rem; flex-shrink:0;"></i>
+            <div>
+              <strong style="color:#92400e;">Wrong SMTP Host Detected!</strong>
+              <p style="color:#78350f; margin:0.25rem 0 0; font-size:0.875rem;">The host is set to <code>smtp.ethereal.email</code> (a test server). Real emails will NOT be sent. Enter your Gmail address in the SMTP Username field and click away — the host will auto-update to <code>smtp.gmail.com</code>.</p>
+            </div>
+          </div>
+
+          <!-- Quick-setup tip -->
+          <div style="background:var(--accent-blue-light); border:1px solid var(--accent-blue); border-radius:12px; padding:1rem 1.5rem; margin-bottom:1.5rem; max-width:800px; font-size:0.875rem; color:var(--accent-blue);">
+            <i class="fa-solid fa-circle-info"></i> &nbsp;<strong>Gmail Setup:</strong> Use <strong>smtp.gmail.com</strong>, Port <strong>587</strong>, SSL unchecked. The password must be a <strong>Gmail App Password</strong> (not your regular password). Generate at: <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--accent-blue); font-weight:bold;">myaccount.google.com/apppasswords</a>. 2-Step Verification must be ON.
+          </div>
+
+          <div class="table-card" style="padding: 2rem; max-width: 800px; margin-bottom: 2rem;">
+            <p style="margin-bottom: 1.5rem; color: var(--text-secondary); font-size: 0.9rem;">
+              Configure SMTP credentials dynamically to trigger real emails to customers (invoices/repair updates) and the system administrator.
+            </p>
+            <form id="email-config-form">
+              <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                  <label for="smtp-host">SMTP Server Host</label>
+                  <input type="text" id="smtp-host" required placeholder="e.g. smtp.gmail.com">
+                </div>
+                <div class="form-group">
+                  <label for="smtp-port">SMTP Server Port</label>
+                  <input type="number" id="smtp-port" required value="587" placeholder="587">
+                </div>
+              </div>
+              
+              <div class="form-group" style="display: flex; flex-direction: row; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem; width: 100%;">
+                <input type="checkbox" id="smtp-secure" style="width: 18px; height: 18px; margin: 0; cursor: pointer;">
+                <label for="smtp-secure" style="margin: 0; cursor: pointer; font-weight: normal;">Enable Secure Connection (SSL/TLS on Port 465 only — leave unchecked for Gmail/Port 587)</label>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1rem;">
+                <div class="form-group">
+                  <label for="smtp-user">SMTP Username / Email</label>
+                  <input type="text" id="smtp-user" placeholder="e.g. yourname@gmail.com" autocomplete="off">
+                  <small style="color:var(--text-secondary); font-size:0.78rem;">Typing your Gmail address will auto-fill the host below.</small>
+                </div>
+                <div class="form-group">
+                  <label for="smtp-pass">SMTP App Password</label>
+                  <input type="password" id="smtp-pass" placeholder="Gmail App Password (not your login password)" autocomplete="new-password">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="default-from">Sender Email Address (From Header)</label>
+                <input type="text" id="default-from" required placeholder="CSK Electronics &lt;support@cskelectronics.com&gt;">
+              </div>
+
+              <div class="form-group">
+                <label for="default-admin-email">Admin Default Recipient Email (For System Alerts)</label>
+                <input type="email" id="default-admin-email" required placeholder="your-real-email@gmail.com">
+                <small style="color:var(--text-secondary); font-size:0.78rem;">All system alerts and the test email will be sent here. Use a real email you can check.</small>
+              </div>
+
+              <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn-primary" style="width: auto;"><i class="fa-solid fa-floppy-disk" style="margin-right: 0.5rem;"></i>Save Mail Settings</button>
+                <button type="button" id="test-mail-btn" class="btn-secondary" style="width: auto;" onclick="testMailConnection()"><i class="fa-solid fa-paper-plane" style="margin-right: 0.5rem;"></i>Send Test Email</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Admin Assigned Technician Jobs -->
+        <div id="view-admin-tech-jobs" class="view-section">
+          <div class="view-header">
+            <h2>My Assigned Service Requests</h2>
+          </div>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-list-check"></i></div>
+              <div class="stat-info">
+                <h4>My Assigned Jobs</h4>
+                <div class="value" id="stat-admin-tech-assigned">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+              <div class="stat-info">
+                <h4>My Pending Jobs</h4>
+                <div class="value" id="stat-admin-tech-pending">0</div>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+              <div class="stat-info">
+                <h4>My Completed Jobs</h4>
+                <div class="value" id="stat-admin-tech-completed">0</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <h3>Service Jobs List</h3>
+            </div>
+            <table id="admin-tech-requests-table">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Customer Details</th>
+                  <th>TV Brand & Model</th>
+                  <th>Problem</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -924,6 +1069,40 @@
     </div>
   </div>
 
-  <script src="app.js?v=2"></script>
+  <!-- MODAL: CHANGE PASSWORD -->
+  <div id="modal-change-password" class="modal">
+    <div class="modal-card" style="max-width: 450px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-key" style="color: var(--accent-blue); margin-right: 0.5rem;"></i>Change Password</h3>
+        <button class="btn-icon" onclick="closeModal('modal-change-password')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="change-password-form" onsubmit="handleChangePassword(event)">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="chg-old-password">Current Password</label>
+            <input type="password" id="chg-old-password" required placeholder="••••••••">
+          </div>
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="chg-new-password">New Password</label>
+            <input type="password" id="chg-new-password" required placeholder="Minimum 6 characters">
+          </div>
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="chg-confirm-password">Confirm New Password</label>
+            <input type="password" id="chg-confirm-password" required placeholder="Minimum 6 characters">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-change-password')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Update Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+
+  <script src="app.js?v=6"></script>
 </body>
 </html>

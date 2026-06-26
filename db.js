@@ -8,6 +8,15 @@ function initDb() {
   if (!fs.existsSync(dbPath)) {
     const salt = bcrypt.genSaltSync(10);
     const initialData = {
+      emailConfig: {
+        smtpHost: "smtp.ethereal.email",
+        smtpPort: 587,
+        smtpSecure: false,
+        smtpUser: "",
+        smtpPass: "",
+        defaultFrom: "CSK Electronics <support@cskelectronics.com>",
+        defaultAdminEmail: "admin@csk.com"
+      },
       users: [
         {
           id: "u-admin",
@@ -124,7 +133,26 @@ function initDb() {
 function getData() {
   initDb();
   const raw = fs.readFileSync(dbPath, 'utf-8');
-  return JSON.parse(raw);
+  const data = JSON.parse(raw);
+  if (!data.emailConfig) {
+    data.emailConfig = {
+      smtpHost: "smtp.ethereal.email",
+      smtpPort: 587,
+      smtpSecure: false,
+      smtpUser: "",
+      smtpPass: "",
+      defaultFrom: "CSK Electronics <support@cskelectronics.com>",
+      defaultAdminEmail: "admin@csk.com"
+    };
+    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+  } else if (data.emailConfig.defaultAdminEmail) {
+    const adminUser = data.users.find(u => u.role === 'admin');
+    if (adminUser && adminUser.email.toLowerCase() !== data.emailConfig.defaultAdminEmail.toLowerCase()) {
+      adminUser.email = data.emailConfig.defaultAdminEmail;
+      fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+    }
+  }
+  return data;
 }
 
 function saveData(data) {

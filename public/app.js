@@ -8,6 +8,26 @@ let allUsers = [];
 let eventSource = null;
 let currentActiveView = 'auth';
 
+// Firebase Client SDK Configuration (Auto-detects credentials file)
+let firebaseAuthActive = false;
+let auth = null;
+
+fetch('/firebase-config.json')
+  .then(res => {
+    if (res.ok) return res.json();
+    throw new Error('Not configured');
+  })
+  .then(config => {
+    firebase.initializeApp(config);
+    auth = firebase.auth();
+    firebaseAuthActive = true;
+    console.log('🔥 [FIREBASE] Client SDK successfully initialized and active.');
+  })
+  .catch(() => {
+    firebaseAuthActive = false;
+    console.log('🔐 [AUTH] Client running in local JWT mode.');
+  });
+
 // Base URL for API
 const API_BASE = '/api';
 
@@ -111,6 +131,12 @@ function updateSidebar(role) {
       <a class="menu-item" onclick="showView('admin-users'); loadAdminUsers();">
         <i class="fa-solid fa-users-gear"></i> Manage Users
       </a>
+      <a class="menu-item" onclick="showView('admin-tech-jobs'); loadAdminTechJobs();">
+        <i class="fa-solid fa-toolbox"></i> My Tech Jobs
+      </a>
+      <a class="menu-item" onclick="showView('admin-email-settings'); loadEmailConfig();">
+        <i class="fa-solid fa-envelope-open-text"></i> Email Settings
+      </a>
     `;
   } else if (role === 'technician') {
     html = `
@@ -129,13 +155,14 @@ function updateSidebar(role) {
 }
 
 // API CALL WRAPPER
-async function apiCall(endpoint, method = 'GET', body = null) {
+async function apiCall(endpoint, method = 'GET', body = null, customToken = null, suppressToast = false) {
   const headers = {
     'Content-Type': 'application/json'
   };
   
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+  const activeToken = customToken || token;
+  if (activeToken) {
+    headers['Authorization'] = `Bearer ${activeToken}`;
   }
   
   const config = {
@@ -160,7 +187,9 @@ async function apiCall(endpoint, method = 'GET', body = null) {
     
     return data;
   } catch (error) {
-    showToast(error.message, 'danger');
+    if (!suppressToast) {
+      showToast(error.message, 'danger');
+    }
     throw error;
   }
 }
@@ -187,7 +216,59 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   const password = document.getElementById('login-password').value.trim();
   
   try {
-    const res = await apiCall('/auth/login', 'POST', { email, password });
+    let res;
+    if (firebaseAuthActive && auth) {
+      // 1. Sign in with Firebase Auth client
+      let userCredential;
+      try {
+        userCredential = await auth.signInWithEmailAndPassword(email, password);
+      } catch (fbErr) {
+        if (fbErr.code === 'auth/user-not-found' || fbErr.code === 'auth/invalid-credential') {
+          // Note: In newer Firebase versions, invalid-credential is used for safety,
+          // but we still want to fall back or redirect if they don't have an account.
+          // To be safe, if we fail to log in and they want to register, they are redirected.
+          // We can check if it says user-not-found specifically:
+          if (fbErr.code === 'auth/user-not-found') {
+            showToast('This email is not registered! Redirecting to signup...', 'warning');
+            switchAuthTab('register');
+            document.getElementById('reg-email').value = email;
+            return;
+          }
+        }
+        showToast(fbErr.message, 'danger');
+        return;
+      }
+      // 2. Fetch Firebase ID Token
+      const idToken = await userCredential.user.getIdToken();
+      // 3. Exchange ID Token for User Profile from CSK Backend
+      try {
+        res = await apiCall('/auth/login', 'POST', {}, idToken, true);
+      } catch (backendErr) {
+        if (backendErr.message && backendErr.message.toLowerCase().includes('not registered')) {
+          showToast('This email is not registered! Redirecting to signup...', 'warning');
+          switchAuthTab('register');
+          document.getElementById('reg-email').value = email;
+        } else {
+          showToast(backendErr.message, 'danger');
+        }
+        return;
+      }
+    } else {
+      // Fallback local password login
+      try {
+        res = await apiCall('/auth/login', 'POST', { email, password }, null, true);
+      } catch (backendErr) {
+        if (backendErr.message && backendErr.message.toLowerCase().includes('not registered')) {
+          showToast('This email is not registered! Redirecting to signup...', 'warning');
+          switchAuthTab('register');
+          document.getElementById('reg-email').value = email;
+        } else {
+          showToast(backendErr.message, 'danger');
+        }
+        return;
+      }
+    }
+
     token = res.token;
     currentUser = res.user;
     
@@ -215,7 +296,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       }, 500); // wait for opacity fade transition
     }, 2200);
   } catch (err) {
-    // Error is handled in apiCall wrapper
+    // Handled in catch blocks above
   }
 });
 
@@ -232,15 +313,123 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     return showToast('Password must be at least 6 characters long', 'warning');
   }
   
+  const btn = document.querySelector('#register-form button[type="submit"]');
+  const origText = btn.innerText;
+  btn.innerText = 'Registering...';
+  btn.disabled = true;
+  
   try {
-    await apiCall('/auth/register', 'POST', { name, email, phone, address, password });
+    if (firebaseAuthActive && auth) {
+      // 1. Create user in Firebase Auth
+      let userCredential;
+      try {
+        userCredential = await auth.createUserWithEmailAndPassword(email, password);
+      } catch (fbErr) {
+        if (fbErr.code === 'auth/email-already-in-use') {
+          showToast('You already have an account! Redirecting to login...', 'warning');
+          switchAuthTab('login');
+          document.getElementById('login-email').value = email;
+        } else {
+          showToast(fbErr.message, 'danger');
+        }
+        btn.innerText = origText;
+        btn.disabled = false;
+        return;
+      }
+      
+      // 2. Register metadata on CSK Backend
+      try {
+        await apiCall('/auth/register', 'POST', { name, email, phone, address }, null, true);
+      } catch (backendErr) {
+        // Clean up Firebase user if metadata registration fails
+        if (userCredential && userCredential.user) {
+          try {
+            await userCredential.user.delete();
+          } catch (deleteErr) {
+            console.error('Error cleaning up Firebase user:', deleteErr);
+          }
+        }
+        if (backendErr.message && backendErr.message.toLowerCase().includes('already registered')) {
+          showToast('You already have an account! Redirecting to login...', 'warning');
+          switchAuthTab('login');
+          document.getElementById('login-email').value = email;
+        } else {
+          showToast(backendErr.message, 'danger');
+        }
+        btn.innerText = origText;
+        btn.disabled = false;
+        return;
+      }
+    } else {
+      // Fallback local password register
+      try {
+        await apiCall('/auth/register', 'POST', { name, email, phone, address, password }, null, true);
+      } catch (err) {
+        if (err.message && err.message.toLowerCase().includes('already registered')) {
+          showToast('You already have an account! Redirecting to login...', 'warning');
+          switchAuthTab('login');
+          document.getElementById('login-email').value = email;
+        } else {
+          showToast(err.message, 'danger');
+        }
+        return;
+      }
+    }
+    
     showToast('Registration successful! Please login.', 'success');
     switchAuthTab('login');
     document.getElementById('login-email').value = email;
   } catch (err) {
-    // Handled in wrapper
+    // Handled in apiCall / above
+  } finally {
+    btn.innerText = origText;
+    btn.disabled = false;
   }
 });
+
+// Forgot Password UI Helpers
+function showForgotPasswordForm(e) {
+  if (e) e.preventDefault();
+  document.querySelector('.auth-tabs').style.display = 'none';
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-password-form').style.display = 'block';
+  document.getElementById('forgot-email').value = document.getElementById('login-email').value;
+}
+
+function cancelForgotPassword(e) {
+  if (e) e.preventDefault();
+  document.querySelector('.auth-tabs').style.display = 'flex';
+  document.getElementById('forgot-password-form').style.display = 'none';
+  document.getElementById('login-form').style.display = 'block';
+  document.getElementById('forgot-password-form').reset();
+}
+
+async function handleForgotPassword(e) {
+  if (e) e.preventDefault();
+  const email = document.getElementById('forgot-email').value.trim();
+  if (!email) return;
+  
+  try {
+    const btn = document.querySelector('#forgot-password-form button[type="submit"]');
+    const origText = btn.innerText;
+    btn.innerText = 'Resetting...';
+    btn.disabled = true;
+    
+    const res = await apiCall('/auth/forgot-password', 'POST', { email });
+    showToast(res.message, 'success');
+    
+    btn.innerText = origText;
+    btn.disabled = false;
+    
+    cancelForgotPassword();
+    document.getElementById('login-email').value = email;
+  } catch (err) {
+    const btn = document.querySelector('#forgot-password-form button[type="submit"]');
+    btn.innerText = 'Reset Password';
+    btn.disabled = false;
+  }
+}
 
 // Logout
 function logout() {
@@ -760,6 +949,7 @@ async function printInvoice(requestId) {
     }
     
     // Populate Printable Area
+    document.getElementById('print-area').classList.add('active');
     document.getElementById('prt-invoice-number').innerText = req.invoice.id;
     document.getElementById('prt-invoice-date').innerText = new Date(req.invoice.createdAt).toLocaleDateString('en-IN', {year: 'numeric', month: 'numeric', day: 'numeric'});
     
@@ -795,7 +985,7 @@ async function printInvoice(requestId) {
     }
     
     // Trigger Print
-    window.print();
+    // window.print();
   } catch (err) {}
 }
 
@@ -1038,13 +1228,14 @@ async function openAssignModal(requestId) {
   // Load Technicians dropdown
   try {
     const users = await apiCall('/admin/users');
-    const technicians = users.filter(u => u.role === 'technician');
+    const technicians = users.filter(u => u.role === 'technician' || u.role === 'admin');
     const select = document.getElementById('select-technician');
     select.innerHTML = '<option value="">-- Select a Technician --</option>';
     
     technicians.forEach(tech => {
       const isCurrentlyAssigned = tech.id === req.assignedTechId;
-      select.innerHTML += `<option value="${tech.id}" ${isCurrentlyAssigned ? 'selected' : ''}>${tech.name} (${tech.specialization || 'LED TV'})${isCurrentlyAssigned ? ' — Currently Assigned' : ''}</option>`;
+      const roleLabel = tech.role === 'admin' ? 'Admin' : tech.specialization || 'LED TV';
+      select.innerHTML += `<option value="${tech.id}" ${isCurrentlyAssigned ? 'selected' : ''}>${tech.name} (${roleLabel})${isCurrentlyAssigned ? ' — Currently Assigned' : ''}</option>`;
     });
     
     openModal('modal-assign-tech');
@@ -1193,3 +1384,196 @@ function updateThemeIcon(theme) {
     iconNode.className = 'fa-solid fa-moon';
   }
 }
+
+// ================= EMAIL & SMTP CONFIGURATION CONTROLS =================
+async function loadEmailConfig() {
+  try {
+    const config = await apiCall('/admin/email-config');
+    document.getElementById('smtp-host').value = config.smtpHost || '';
+    document.getElementById('smtp-port').value = config.smtpPort || 587;
+    document.getElementById('smtp-secure').checked = !!config.smtpSecure;
+    document.getElementById('smtp-user').value = config.smtpUser || '';
+    // Show masked dots if password exists, empty if not
+    document.getElementById('smtp-pass').value = config.smtpPass ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022' : '';
+    document.getElementById('default-from').value = config.defaultFrom || '';
+    document.getElementById('default-admin-email').value = config.defaultAdminEmail || '';
+    
+    // Show a warning if host is still the default dummy value
+    const hostWarning = document.getElementById('smtp-host-warning');
+    if (hostWarning) {
+      const isEthereal = (config.smtpHost || '').includes('ethereal');
+      hostWarning.style.display = isEthereal ? 'flex' : 'none';
+    }
+  } catch (err) {}
+}
+
+// Auto-detect SMTP host from email address typed
+document.getElementById('smtp-user').addEventListener('blur', function() {
+  const email = this.value.trim().toLowerCase();
+  const hostField = document.getElementById('smtp-host');
+  const portField = document.getElementById('smtp-port');
+  const secureField = document.getElementById('smtp-secure');
+  
+  if (email.endsWith('@gmail.com')) {
+    hostField.value = 'smtp.gmail.com';
+    portField.value = '587';
+    secureField.checked = false;
+  } else if (email.endsWith('@outlook.com') || email.endsWith('@hotmail.com') || email.endsWith('@live.com')) {
+    hostField.value = 'smtp-mail.outlook.com';
+    portField.value = '587';
+    secureField.checked = false;
+  } else if (email.endsWith('@yahoo.com')) {
+    hostField.value = 'smtp.mail.yahoo.com';
+    portField.value = '587';
+    secureField.checked = false;
+  }
+  
+  // Update warning
+  const hostWarning = document.getElementById('smtp-host-warning');
+  if (hostWarning) {
+    const isEthereal = hostField.value.includes('ethereal');
+    hostWarning.style.display = isEthereal ? 'flex' : 'none';
+  }
+});
+
+document.getElementById('email-config-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const smtpHost = document.getElementById('smtp-host').value.trim();
+  const smtpPort = parseInt(document.getElementById('smtp-port').value) || 587;
+  const smtpUser = document.getElementById('smtp-user').value.trim();
+  const smtpPassRaw = document.getElementById('smtp-pass').value;
+  const defaultFrom = document.getElementById('default-from').value.trim();
+  const defaultAdminEmail = document.getElementById('default-admin-email').value.trim();
+  // Always send secure=false for port 587 (backend auto-corrects)
+  const smtpSecure = smtpPort === 465;
+
+  if (!smtpHost || smtpHost.includes('ethereal')) {
+    return showToast('Please enter a valid SMTP host (e.g. smtp.gmail.com)', 'warning');
+  }
+  if (!smtpUser) {
+    return showToast('SMTP Username / Email is required', 'warning');
+  }
+
+  try {
+    const result = await apiCall('/admin/email-config', 'POST', {
+      smtpHost, smtpPort, smtpSecure, smtpUser,
+      smtpPass: smtpPassRaw,  // backend keeps old password if this is the mask
+      defaultFrom, defaultAdminEmail
+    });
+    showToast('✅ SMTP settings saved! Click "Send Test Email" to verify.', 'success');
+    loadEmailConfig();
+  } catch (err) {}
+});
+
+
+async function testMailConnection() {
+  const btn = document.getElementById('test-mail-btn');
+  btn.disabled = true;
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Sending...';
+  try {
+    const res = await apiCall('/admin/email-config/test', 'POST');
+    showToast(res.message || 'Test email sent successfully!', 'success');
+  } catch (err) {
+    showToast(err.message || 'Test email failed to send.', 'danger');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = originalHtml;
+  }
+}
+
+// ================= ADMIN ACTING AS TECHNICIAN CONTROLS =================
+async function loadAdminTechJobs() {
+  try {
+    const requests = await apiCall('/technician/requests');
+    activeRequests = requests; // Save to global variable for modals
+    
+    // Set Admin Tech Stats
+    const total = requests.length;
+    const completed = requests.filter(r => ['Repair Completed', 'Invoice Generated', 'Closed'].includes(r.status)).length;
+    const pending = total - completed;
+    
+    document.getElementById('stat-admin-tech-assigned').innerText = total;
+    document.getElementById('stat-admin-tech-pending').innerText = pending;
+    document.getElementById('stat-admin-tech-completed').innerText = completed;
+    
+    const tbody = document.querySelector('#admin-tech-requests-table tbody');
+    tbody.innerHTML = '';
+    
+    if (requests.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No repair jobs currently assigned to you.</td></tr>`;
+      return;
+    }
+    
+    requests.forEach(req => {
+      let actionBtn = '';
+      const currentStatus = req.status.trim();
+      
+      if (currentStatus === 'Assigned') {
+        actionBtn = `<button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto;" onclick="openEstimateModal('${req.id}')"><i class="fa-solid fa-file-invoice-dollar"></i> Inspect & Estimate</button>`;
+      } else if (currentStatus === 'Approved' || currentStatus === 'Repair In Progress') {
+        actionBtn = `<button class="btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto; background: var(--accent-success);" onclick="openCompleteModal('${req.id}')"><i class="fa-solid fa-circle-check"></i> Complete Repair</button>`;
+      } else {
+        actionBtn = `<button class="btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; width: auto;" onclick="viewRequestDetails('${req.id}')"><i class="fa-solid fa-folder-open"></i> Full logs</button>`;
+      }
+      
+      tbody.innerHTML += `
+        <tr>
+          <td><strong>${req.id}</strong></td>
+          <td><strong>${req.customerName}</strong><br><span style="font-size: 0.8rem; color: var(--text-secondary);">${req.customerPhone}</span></td>
+          <td>${req.tvBrand} - ${req.tvModel}</td>
+          <td style="max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${req.problemDesc}</td>
+          <td><span class="badge badge-${req.status.toLowerCase().replace(/ /g, '-')}">${req.status}</span></td>
+          <td>${actionBtn}</td>
+        </tr>
+      `;
+    });
+  } catch (err) {}
+}
+
+// Change Password submit handler
+async function handleChangePassword(e) {
+  if (e) e.preventDefault();
+  const oldPassword = document.getElementById('chg-old-password').value.trim();
+  const newPassword = document.getElementById('chg-new-password').value.trim();
+  const confirmPassword = document.getElementById('chg-confirm-password').value.trim();
+  
+  if (!oldPassword || !newPassword || !confirmPassword) {
+    return showToast('All fields are required', 'warning');
+  }
+  if (newPassword.length < 6) {
+    return showToast('New password must be at least 6 characters long', 'warning');
+  }
+  if (newPassword !== confirmPassword) {
+    return showToast('Passwords do not match', 'warning');
+  }
+  
+  try {
+    const btn = document.querySelector('#change-password-form button[type="submit"]');
+    const origText = btn.innerText;
+    btn.innerText = 'Updating...';
+    btn.disabled = true;
+    
+    const result = await apiCall('/auth/change-password', 'POST', { oldPassword, newPassword });
+    showToast(result.message || 'Password changed successfully!', 'success');
+    
+    btn.innerText = origText;
+    btn.disabled = false;
+    
+    closeModal('modal-change-password');
+    document.getElementById('change-password-form').reset();
+  } catch (err) {
+    const btn = document.querySelector('#change-password-form button[type="submit"]');
+    btn.innerText = 'Update Password';
+    btn.disabled = false;
+  }
+}
+
+// Global window bindings to prevent ReferenceErrors in inline HTML handlers
+window.handleChangePassword = handleChangePassword;
+window.handleForgotPassword = handleForgotPassword;
+window.cancelForgotPassword = cancelForgotPassword;
+window.showForgotPasswordForm = showForgotPasswordForm;
+window.loadEmailConfig = loadEmailConfig;
+window.testMailConnection = testMailConnection;
+window.loadAdminTechJobs = loadAdminTechJobs;
