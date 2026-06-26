@@ -391,6 +391,27 @@ app.post('/api/auth/change-password', authenticateToken, (req, res) => {
   res.json({ message: 'Password updated successfully!' });
 });
 
+// VERIFY ADMIN PASSWORD (FOR SETTINGS PROTECTION)
+app.post('/api/admin/verify-password', authenticateToken, requireRole(['admin']), (req, res) => {
+  const { password } = req.body;
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+  
+  const data = db.getData();
+  const user = data.users.find(u => u.id === req.user.id);
+  
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  
+  if (!bcrypt.compareSync(password, user.passwordHash)) {
+    return res.status(400).json({ error: 'Incorrect password' });
+  }
+  
+  res.json({ success: true, message: 'Password verified successfully' });
+});
+
 // ADMIN DASHBOARD STATS
 app.get('/api/admin/stats', authenticateToken, requireRole(['admin']), (req, res) => {
   const data = db.getData();
@@ -427,7 +448,7 @@ app.get('/api/admin/users', authenticateToken, requireRole(['admin']), (req, res
   res.json(users);
 });
 
-app.post('/api/admin/users', authenticateToken, requireRole(['admin']), (req, res) => {
+app.post('/api/admin/users', authenticateToken, requireRole(['admin']), async (req, res) => {
   const { email, password, name, role, phone, address, specialization } = req.body;
   if (!email || !password || !name || !role) {
     return res.status(400).json({ error: 'Email, password, name, and role are required' });
@@ -437,12 +458,31 @@ app.post('/api/admin/users', authenticateToken, requireRole(['admin']), (req, re
   if (data.users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
     return res.status(400).json({ error: 'Email already registered' });
   }
+
+  // Create Firebase Auth user if active
+  if (useFirebase && firebaseAuth) {
+    try {
+      const createParams = {
+        email,
+        password,
+        displayName: name
+      };
+      const cleanedPhone = (phone || '').replace(/\D/g, '');
+      if (cleanedPhone.length === 10) {
+        createParams.phoneNumber = `+91${cleanedPhone}`;
+      }
+      await firebaseAuth.createUser(createParams);
+    } catch (fbErr) {
+      return res.status(400).json({ error: 'Firebase registration failed: ' + fbErr.message });
+    }
+  }
   
   const salt = bcrypt.genSaltSync(10);
   const newUser = {
     id: 'u-' + crypto.randomUUID().substring(0, 8),
     email,
     passwordHash: bcrypt.hashSync(password, salt),
+    plainPassword: password,
     name,
     role,
     phone: phone || '',
@@ -451,9 +491,187 @@ app.post('/api/admin/users', authenticateToken, requireRole(['admin']), (req, re
   };
   
   data.users.push(newUser);
+  addRequestUpdate(data, 'USER-MGMT', 'User Created', `New ${role} "${name}" (${email}) registered by Admin.`, 'Admin');
   db.saveData(data);
+
+  // Send credentials email
+  const userRoleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+  const credentialsEmailHtml = mailService.buildEmailTemplate({
+    title: 'Your CSK Electronics Account is Ready!',
+    bodyHtml: `
+      <p>Dear ${name},</p>
+      <p>An administrator has created your <strong>CSK Electronics</strong> account profile as a <strong>${userRoleLabel}</strong>. You can now log in to the platform using the credentials below.</p>
+      
+      ${role === 'customer' ? `
+      <div style="background-color: #fff1f2; border: 1.5px solid #f43f5e; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
+        <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #e11d48; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
+          ⚠️ Important Notice: Independent Multi-Brand Service
+        </h4>
+        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #9f1239; font-weight: 500;">
+          Please note: <strong>This is not an Authorized TV Service Center</strong>. CSK Electronics is an independent service center specializing in repairs of <strong>all types and brands of TVs</strong> (Samsung, Sony, LG, Panasonic, TCL, etc.).
+        </p>
+      </div>
+      ` : ''}
+
+      <p>Here are your login credentials:</p>
+      <table class="details-table">
+        <tr>
+          <td class="label">System Role</td>
+          <td class="value"><strong>${userRoleLabel}</strong></td>
+        </tr>
+        <tr>
+          <td class="label">Email Address</td>
+          <td class="value">${email}</td>
+        </tr>
+        <tr>
+          <td class="label">Security Password</td>
+          <td class="value"><code>${password}</code></td>
+        </tr>
+        <tr>
+          <td class="label">Phone Number</td>
+          <td class="value">${phone || 'N/A'}</td>
+        </tr>
+        ${role === 'technician' ? `
+        <tr>
+          <td class="label">Specialization</td>
+          <td class="value">${specialization || 'General TV Repair'}</td>
+        </tr>
+        ` : `
+        <tr>
+          <td class="label">Billing Address</td>
+          <td class="value">${address || 'N/A'}</td>
+        </tr>
+        `}
+      </table>
+
+      ${role === 'customer' ? `
+      <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 25px; margin-bottom: 10px;">We Repair and Service All Major Brands</h3>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
+        <tr>
+          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Samsung</td>
+          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Sony</td>
+          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">LG</td>
+        </tr>
+        <tr>
+          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Panasonic</td>
+          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">TCL</td>
+          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">OnePlus</td>
+        </tr>
+      </table>
+      ` : ''}
+
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="http://localhost:3000" style="display: inline-block; padding: 12px 28px; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 15px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">Log In to Dashboard</a>
+      </div>
+    `
+  });
+
+  mailService.sendMail({
+    to: email,
+    subject: `CSK Electronics - Your ${userRoleLabel} Account is Ready`,
+    html: credentialsEmailHtml
+  }).catch(err => console.error("Error sending user credentials email:", err.message));
   
   res.status(201).json({ message: `${role.charAt(0).toUpperCase() + role.slice(1)} created successfully` });
+});
+
+app.delete('/api/admin/users/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
+  const { id } = req.params;
+  const data = db.getData();
+  
+  const userIndex = data.users.findIndex(u => u.id === id);
+  if (userIndex === -1) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+  
+  const user = data.users[userIndex];
+  
+  // Prevent deleting oneself
+  if (user.id === req.user.id) {
+    return res.status(400).json({ error: 'You cannot delete your own admin account' });
+  }
+  
+  // If Firebase is active, delete the user from Firebase Auth
+  if (useFirebase && firebaseAuth) {
+    try {
+      const fbUser = await firebaseAuth.getUserByEmail(user.email);
+      if (fbUser) {
+        await firebaseAuth.deleteUser(fbUser.uid);
+        console.log(`Successfully deleted Firebase user: ${user.email}`);
+      }
+    } catch (fbErr) {
+      console.error(`Error deleting user from Firebase:`, fbErr.message);
+    }
+  }
+  // If technician, unassign from active requests and revert status to New
+  if (user.role === 'technician') {
+    (data.requests || []).forEach(reqItem => {
+      if (reqItem.assignedTechId === id && reqItem.status !== 'Closed') {
+        reqItem.assignedTechId = null;
+        reqItem.status = 'New';
+        reqItem.updatedAt = new Date().toISOString();
+        addRequestUpdate(data, reqItem.id, 'New', `Technician "${user.name}" was removed; request reset to New status automatically.`, 'System');
+      }
+    });
+  }
+  
+  // Remove from local database
+  data.users.splice(userIndex, 1);
+  addRequestUpdate(data, 'USER-MGMT', 'User Removed', `User "${user.name}" (${user.email}, role: ${user.role}) was removed by Admin.`, 'Admin');
+  db.saveData(data);
+  
+  res.json({ message: 'User deleted successfully' });
+});
+
+// ADMIN DELETE SERVICE REQUEST
+app.delete('/api/admin/requests/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
+  const { id } = req.params;
+  const data = db.getData();
+  
+  const reqIndex = data.requests.findIndex(r => r.id === id);
+  if (reqIndex === -1) {
+    return res.status(404).json({ error: 'Request not found' });
+  }
+  
+  const request = data.requests[reqIndex];
+  
+  // Remove request from local database
+  data.requests.splice(reqIndex, 1);
+  
+  // Remove associated estimates
+  data.estimates = (data.estimates || []).filter(e => e.requestId !== id);
+  
+  // Remove associated invoices
+  data.invoices = (data.invoices || []).filter(i => i.requestId !== id);
+  
+  // Log request deletion in updates
+  addRequestUpdate(data, id, 'Request Removed', `Service request "${id}" (brand: ${request.tvBrand}, model: ${request.tvModel}) was removed by Admin.`, 'Admin');
+  
+  db.saveData(data);
+  res.json({ message: 'Request and associated details deleted successfully' });
+});
+
+// ADMIN DELETE AUDIT LOG ENTRY
+app.delete('/api/admin/audit-logs/:createdAt', authenticateToken, requireRole(['admin']), async (req, res) => {
+  const { createdAt } = req.params;
+  const data = db.getData();
+  
+  const logIndex = data.updates.findIndex(u => u.createdAt === createdAt);
+  if (logIndex === -1) {
+    return res.status(404).json({ error: 'Audit log entry not found' });
+  }
+  
+  data.updates.splice(logIndex, 1);
+  db.saveData(data);
+  
+  res.json({ message: 'Audit log entry deleted successfully' });
+});
+
+// ADMIN AUDIT LOGS / COMPREHENSIVE INTERACTION REPORT
+app.get('/api/admin/audit-logs', authenticateToken, requireRole(['admin']), (req, res) => {
+  const data = db.getData();
+  const sortedLogs = [...(data.updates || [])].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  res.json(sortedLogs);
 });
 
 // ADMIN SERVICE REQUESTS

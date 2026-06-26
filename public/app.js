@@ -63,6 +63,86 @@ window.addEventListener('DOMContentLoaded', () => {
       }
     }, 500);
   }, introDuration);
+
+  // Initialize custom delete user confirmation click handler
+  const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+  if (confirmDeleteBtn) {
+    confirmDeleteBtn.addEventListener('click', async () => {
+      if (!pendingDeleteUserId) return;
+      try {
+        const btn = document.getElementById('confirm-delete-btn');
+        btn.innerText = 'Removing...';
+        btn.disabled = true;
+        
+        await apiCall(`/admin/users/${pendingDeleteUserId}`, 'DELETE');
+        showToast(`User "${pendingDeleteUserName}" successfully removed!`, 'success');
+        closeModal('modal-confirm-delete');
+        loadAdminUsers();
+        loadAdminAuditReport(); // Keep audit logs view in sync when a user is removed
+      } catch (err) {
+        showToast(err.message || 'Failed to remove user', 'danger');
+      } finally {
+        const btn = document.getElementById('confirm-delete-btn');
+        if (btn) {
+          btn.innerText = 'Confirm Remove';
+          btn.disabled = false;
+        }
+      }
+    });
+  }
+
+  // Initialize custom delete request confirmation click handler
+  const confirmDeleteRequestBtn = document.getElementById('confirm-delete-request-btn');
+  if (confirmDeleteRequestBtn) {
+    confirmDeleteRequestBtn.addEventListener('click', async () => {
+      if (!pendingDeleteRequestId) return;
+      try {
+        const btn = document.getElementById('confirm-delete-request-btn');
+        btn.innerText = 'Removing...';
+        btn.disabled = true;
+        
+        await apiCall(`/admin/requests/${pendingDeleteRequestId}`, 'DELETE');
+        showToast(`Request "${pendingDeleteRequestId}" successfully removed!`, 'success');
+        closeModal('modal-confirm-delete-request');
+        loadAdminRequests();
+        loadAdminAuditReport(); // Update audit report immediately to show Request Removed entry
+      } catch (err) {
+        showToast(err.message || 'Failed to remove request', 'danger');
+      } finally {
+        const btn = document.getElementById('confirm-delete-request-btn');
+        if (btn) {
+          btn.innerText = 'Confirm Remove';
+          btn.disabled = false;
+        }
+      }
+    });
+  }
+
+  // Initialize custom delete audit log confirmation click handler
+  const confirmDeleteLogBtn = document.getElementById('confirm-delete-log-btn');
+  if (confirmDeleteLogBtn) {
+    confirmDeleteLogBtn.addEventListener('click', async () => {
+      if (!pendingDeleteLogCreatedAt) return;
+      try {
+        const btn = document.getElementById('confirm-delete-log-btn');
+        btn.innerText = 'Removing...';
+        btn.disabled = true;
+        
+        await apiCall(`/admin/audit-logs/${encodeURIComponent(pendingDeleteLogCreatedAt)}`, 'DELETE');
+        showToast(`Audit log successfully removed!`, 'success');
+        closeModal('modal-confirm-delete-log');
+        loadAdminAuditReport();
+      } catch (err) {
+        showToast(err.message || 'Failed to remove log', 'danger');
+      } finally {
+        const btn = document.getElementById('confirm-delete-log-btn');
+        if (btn) {
+          btn.innerText = 'Confirm Remove';
+          btn.disabled = false;
+        }
+      }
+    });
+  }
 });
 
 // ROUTING
@@ -111,6 +191,12 @@ function setupHeader() {
     userInfo.style.display = 'flex';
     document.getElementById('user-display-name').innerText = currentUser.name;
     document.getElementById('user-display-role').innerText = currentUser.role;
+    
+    // Show/hide gear settings icon for admin only
+    const adminSettingsBtn = document.getElementById('admin-settings-btn');
+    if (adminSettingsBtn) {
+      adminSettingsBtn.style.display = currentUser.role === 'admin' ? 'inline-flex' : 'none';
+    }
   } else {
     userInfo.style.display = 'none';
   }
@@ -134,8 +220,8 @@ function updateSidebar(role) {
       <a class="menu-item" onclick="showView('admin-tech-jobs'); loadAdminTechJobs();">
         <i class="fa-solid fa-toolbox"></i> My Tech Jobs
       </a>
-      <a class="menu-item" onclick="showView('admin-email-settings'); loadEmailConfig();">
-        <i class="fa-solid fa-envelope-open-text"></i> Email Settings
+      <a class="menu-item" onclick="showView('admin-audit-report'); loadAdminAuditReport();">
+        <i class="fa-solid fa-clock-rotate-left"></i> Audit Report
       </a>
     `;
   } else if (role === 'technician') {
@@ -525,6 +611,155 @@ async function loadAdminDashboard() {
   } catch (err) {}
 }
 
+// Show stat details popup when a dashboard card is clicked
+async function showDashboardStatDetails(type) {
+  // Show loading state
+  document.getElementById('dashboard-stats-loading').style.display = 'block';
+  document.getElementById('dashboard-stats-content').style.display = 'none';
+  document.getElementById('dashboard-stats-empty').style.display = 'none';
+  openModal('modal-dashboard-stats');
+
+  const configMap = {
+    customers:  { icon: 'fa-users',           title: 'Total Customers'    },
+    technicians:{ icon: 'fa-user-gear',        title: 'Total Technicians'  },
+    active:     { icon: 'fa-wrench',           title: 'Active Repairs'     },
+    completed:  { icon: 'fa-circle-check',     title: 'Completed Repairs'  },
+    pending:    { icon: 'fa-clock',            title: 'Pending Repairs'    },
+    revenue:    { icon: 'fa-indian-rupee-sign',title: 'Revenue Breakdown'  }
+  };
+
+  const cfg = configMap[type] || { icon: 'fa-list', title: 'Records' };
+  const titleEl = document.getElementById('dashboard-stats-modal-title');
+  const iconEl  = document.getElementById('dashboard-stats-modal-icon');
+  iconEl.className  = `fa-solid ${cfg.icon}`;
+  titleEl.querySelector('span').innerText = cfg.title;
+
+  try {
+    const [users, requests] = await Promise.all([
+      apiCall('/admin/users'),
+      apiCall('/admin/requests')
+    ]);
+
+    let headers = [];
+    let rows    = [];
+    let summaryRow = null;
+
+    if (type === 'customers') {
+      headers = ['#', 'Name', 'Email', 'Phone', 'Billing Address'];
+      const customers = users.filter(u => u.role === 'customer');
+      rows = customers.map((u, i) => [
+        `<span style="color:var(--text-secondary);font-size:0.8rem;">${i + 1}</span>`,
+        `<strong>${u.name}</strong>`,
+        `<a href="mailto:${u.email}" style="color:var(--accent-blue);text-decoration:none;">${u.email}</a>`,
+        u.phone || '<span style="color:var(--text-secondary);">—</span>',
+        u.address || '<span style="color:var(--text-secondary);">—</span>'
+      ]);
+
+    } else if (type === 'technicians') {
+      headers = ['#', 'Name', 'Email', 'Phone', 'Specialization', 'Password'];
+      const techs = users.filter(u => u.role === 'technician');
+      rows = techs.map((u, i) => [
+        `<span style="color:var(--text-secondary);font-size:0.8rem;">${i + 1}</span>`,
+        `<strong>${u.name}</strong>`,
+        `<a href="mailto:${u.email}" style="color:var(--accent-blue);text-decoration:none;">${u.email}</a>`,
+        u.phone || '<span style="color:var(--text-secondary);">—</span>',
+        u.specialization || '<span style="color:var(--text-secondary);">General</span>',
+        u.plainPassword ? `<code style="background:var(--bg-primary);padding:0.15rem 0.4rem;border-radius:4px;font-size:0.85rem;">${u.plainPassword}</code>` : '<span style="color:var(--text-secondary);">—</span>'
+      ]);
+
+    } else if (type === 'active') {
+      headers = ['Request ID', 'Customer', 'Device', 'Assigned Tech', 'Status'];
+      const activeStatuses = ['Assigned','Inspection Completed','Waiting Customer Approval','Approved','Repair In Progress'];
+      const filtered = requests.filter(r => activeStatuses.includes(r.status));
+      rows = filtered.map(r => [
+        `<strong style="color:var(--accent-blue);">${r.id}</strong>`,
+        r.customerName || '—',
+        `${r.tvBrand} - ${r.tvModel}`,
+        r.technicianName || '<span style="color:var(--text-secondary);">Unassigned</span>',
+        `<span class="badge badge-${r.status.toLowerCase().replace(/ /g,'-')}">${r.status}</span>`
+      ]);
+
+    } else if (type === 'completed') {
+      headers = ['Request ID', 'Customer', 'Device', 'Assigned Tech', 'Status'];
+      const filtered = requests.filter(r => ['Repair Completed','Invoice Generated','Closed'].includes(r.status));
+      rows = filtered.map(r => [
+        `<strong style="color:var(--accent-blue);">${r.id}</strong>`,
+        r.customerName || '—',
+        `${r.tvBrand} - ${r.tvModel}`,
+        r.technicianName || '—',
+        `<span class="badge badge-${r.status.toLowerCase().replace(/ /g,'-')}">${r.status}</span>`
+      ]);
+
+    } else if (type === 'pending') {
+      headers = ['Request ID', 'Customer', 'Device', 'Registered On', 'Status'];
+      const filtered = requests.filter(r => r.status === 'New');
+      rows = filtered.map(r => [
+        `<strong style="color:var(--accent-blue);">${r.id}</strong>`,
+        r.customerName || '—',
+        `${r.tvBrand} - ${r.tvModel}`,
+        new Date(r.createdAt).toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'}),
+        `<span class="badge badge-new">New</span>`
+      ]);
+
+    } else if (type === 'revenue') {
+      headers = ['Invoice #', 'Request ID', 'Customer', 'Grand Total', 'Inspection', 'Parts', 'Labour', 'Additional'];
+      const adminRequests = requests.filter(r => r.invoice);
+      let grandTotal = 0;
+      rows = adminRequests.map(r => {
+        const inv = r.invoice;
+        grandTotal += inv.totalAmount || 0;
+        return [
+          `<strong style="color:var(--accent-blue);">${inv.id}</strong>`,
+          r.id,
+          r.customerName || '—',
+          `<strong>₹${(inv.totalAmount||0).toLocaleString('en-IN')}</strong>`,
+          `₹${inv.inspectionCharge||0}`,
+          `₹${inv.sparePartsCost||0}`,
+          `₹${inv.labourCharges||0}`,
+          `₹${inv.additionalCharges||0}`
+        ];
+      });
+      if (rows.length > 0) {
+        summaryRow = [
+          `<strong>TOTAL</strong>`, '—', '—',
+          `<strong style="color:var(--accent-blue);">₹${grandTotal.toLocaleString('en-IN')}</strong>`,
+          '—','—','—','—'
+        ];
+      }
+    }
+
+    // Build the table
+    const thead = document.getElementById('dashboard-stats-thead');
+    const tbody = document.getElementById('dashboard-stats-tbody');
+
+    thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+    tbody.innerHTML = '';
+
+    if (rows.length === 0) {
+      document.getElementById('dashboard-stats-loading').style.display = 'none';
+      document.getElementById('dashboard-stats-empty').style.display = 'block';
+      return;
+    }
+
+    rows.forEach(cols => {
+      tbody.innerHTML += '<tr>' + cols.map(c => `<td>${c}</td>`).join('') + '</tr>';
+    });
+
+    if (summaryRow) {
+      tbody.innerHTML += '<tr class="summary-row">' + summaryRow.map(c => `<td>${c}</td>`).join('') + '</tr>';
+    }
+
+    document.getElementById('dashboard-stats-loading').style.display = 'none';
+    document.getElementById('dashboard-stats-content').style.display = 'block';
+
+  } catch (err) {
+    document.getElementById('dashboard-stats-loading').style.display = 'none';
+    document.getElementById('dashboard-stats-empty').style.display = 'block';
+    showToast('Failed to load details', 'danger');
+  }
+}
+window.showDashboardStatDetails = showDashboardStatDetails;
+
 async function loadAdminRequests() {
   try {
     activeRequests = await apiCall('/admin/requests'); // store globally for modal lookups
@@ -549,12 +784,15 @@ function renderAdminRequestsTable(requests) {
     const assignBtnClass = isAssigned ? 'btn-assign btn-assign-secondary' : 'btn-assign btn-assign-primary';
 
     const actionCell = `
-      <div class="admin-actions-cell">
+      <div class="admin-actions-cell" style="display: flex; gap: 0.5rem; align-items: center;">
         <button class="${assignBtnClass}" onclick="openAssignModal('${req.id}')">
           <i class="fa-solid ${assignIcon}"></i> ${assignLabel}
         </button>
         <button class="btn-assign btn-assign-logs" onclick="viewRequestDetails('${req.id}')">
           <i class="fa-solid fa-folder-open"></i> View Logs
+        </button>
+        <button class="btn-secondary" style="background-color: #ffe4e6; color: #b91c1c; border: 1px solid #fca5a5; padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;" onclick="deleteRequest('${req.id}')">
+          <i class="fa-solid fa-trash-can"></i> Remove
         </button>
       </div>
     `;
@@ -597,6 +835,14 @@ async function loadAdminUsers() {
       if (u.role === 'customer') extra = u.address;
       if (u.role === 'technician') extra = `Specialization: <strong>${u.specialization || 'General'}</strong>`;
       
+      const pwdVal = u.role === 'technician' ? `<code>${u.plainPassword || 'tech123'}</code>` : `<span style="color: var(--text-secondary); font-size: 0.85rem;">N/A</span>`;
+      
+      const actionsHtml = u.role !== 'admin' ? `
+        <button class="btn-secondary" style="background-color: #ffe4e6; color: #b91c1c; border: 1px solid #fca5a5; padding: 0.25rem 0.6rem; font-size: 0.75rem; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 0.25rem;" onclick="deleteUser('${u.id}', '${u.name}')">
+          <i class="fa-solid fa-trash-can"></i> Remove
+        </button>
+      ` : `<span style="color: var(--text-secondary); font-size: 0.75rem;">Protected</span>`;
+
       tbody.innerHTML += `
         <tr>
           <td>${u.id}</td>
@@ -604,12 +850,41 @@ async function loadAdminUsers() {
           <td>${u.email}</td>
           <td>${u.phone}</td>
           <td><span class="role" style="background-color: var(--accent-blue-light); color: var(--accent-blue); padding: 0.15rem 0.5rem; border-radius: 5px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">${u.role}</span></td>
+          <td>${pwdVal}</td>
           <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${extra}</td>
+          <td>${actionsHtml}</td>
         </tr>
       `;
     });
   } catch (err) {}
 }
+
+let pendingDeleteUserId = null;
+let pendingDeleteUserName = null;
+
+function deleteUser(id, name) {
+  pendingDeleteUserId = id;
+  pendingDeleteUserName = name;
+  
+  const msgNode = document.getElementById('confirm-delete-message');
+  if (msgNode) {
+    msgNode.innerHTML = `Are you sure you want to remove the user <strong>${name}</strong>?`;
+  }
+  
+  openModal('modal-confirm-delete');
+}
+window.deleteUser = deleteUser;
+
+let pendingDeleteRequestId = null;
+function deleteRequest(id) {
+  pendingDeleteRequestId = id;
+  const msgNode = document.getElementById('confirm-delete-request-message');
+  if (msgNode) {
+    msgNode.innerHTML = `Are you sure you want to remove the service request <strong>${id}</strong>?`;
+  }
+  openModal('modal-confirm-delete-request');
+}
+window.deleteRequest = deleteRequest;
 
 // Admin Assign Submit
 document.getElementById('admin-assign-form').addEventListener('submit', async (e) => {
@@ -1569,6 +1844,180 @@ async function handleChangePassword(e) {
   }
 }
 
+// Admin Settings Password Verification Handlers
+function openSettingsPasswordModal() {
+  document.getElementById('settings-admin-password').value = '';
+  openModal('modal-settings-password');
+}
+
+async function handleConfirmSettingsPassword(e) {
+  e.preventDefault();
+  const password = document.getElementById('settings-admin-password').value;
+  if (!password) {
+    return showToast('Password is required', 'warning');
+  }
+
+  try {
+    const btn = document.querySelector('#settings-password-form button[type="submit"]');
+    const origText = btn.innerText;
+    btn.innerText = 'Verifying...';
+    btn.disabled = true;
+
+    let isVerified = false;
+    if (firebaseAuthActive && auth) {
+      // Re-authenticate using Firebase EmailAuthProvider
+      const user = auth.currentUser;
+      if (user) {
+        const credential = firebase.auth.EmailAuthProvider.credential(user.email, password);
+        await user.reauthenticateWithCredential(credential);
+        isVerified = true;
+      } else {
+        throw new Error('No active user session found');
+      }
+    } else {
+      // Local Auth verification
+      const result = await apiCall('/admin/verify-password', 'POST', { password }, null, true);
+      isVerified = result.success;
+    }
+
+    if (isVerified) {
+      closeModal('modal-settings-password');
+      document.getElementById('settings-password-form').reset();
+      showToast('Verification successful!', 'success');
+      showView('admin-email-settings');
+      loadEmailConfig();
+    }
+  } catch (err) {
+    showToast(err.message || 'Incorrect password', 'danger');
+  } finally {
+    const btn = document.querySelector('#settings-password-form button[type="submit"]');
+    if (btn) {
+      btn.innerText = 'Verify Password';
+      btn.disabled = false;
+    }
+  }
+}
+
+// Audit Logs Report Variables & Functions
+let auditLogs = [];
+
+async function loadAdminAuditReport() {
+  try {
+    auditLogs = await apiCall('/admin/audit-logs');
+    renderAuditLogsTable(auditLogs);
+  } catch (err) {
+    showToast('Failed to load audit logs', 'danger');
+  }
+}
+
+function renderAuditLogsTable(logs) {
+  const tbody = document.querySelector('#admin-audit-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  if (logs.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-secondary); padding: 2rem;">No audit logs found matching the filter criteria.</td></tr>`;
+    return;
+  }
+
+  logs.forEach(log => {
+    // Format timestamp in IST (Indian Standard Time)
+    const istTime = new Date(log.createdAt).toLocaleString('en-IN', {
+      timeZone: 'Asia/Kolkata',
+      dateStyle: 'medium',
+      timeStyle: 'medium'
+    });
+
+    let badgeColor = 'var(--text-secondary)';
+    let badgeBg = 'rgba(0, 0, 0, 0.05)';
+    const actor = log.updatedBy || 'System';
+    
+    if (actor === 'Admin') {
+      badgeColor = '#1e3a8a';
+      badgeBg = '#dbeafe';
+    } else if (actor === 'Technician' || actor.startsWith('u-') || ['Alex Mercer', 'Sarah Connor', 'Bobby'].includes(actor)) {
+      badgeColor = '#0f766e';
+      badgeBg = '#ccfbf1';
+    } else if (actor === 'Customer' || actor === 'Dattu') {
+      badgeColor = '#b45309';
+      badgeBg = '#fef3c7';
+    } else if (actor === 'System') {
+      badgeColor = '#475569';
+      badgeBg = '#e2e8f0';
+    }
+
+    tbody.innerHTML += `
+      <tr>
+        <td style="font-family: monospace; font-size: 0.85rem;">${istTime}</td>
+        <td><strong style="color: var(--accent-blue);">${log.requestId}</strong></td>
+        <td>
+          <span class="role" style="background-color: var(--accent-blue-light); color: var(--accent-blue); padding: 0.15rem 0.5rem; border-radius: 5px; font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">
+            ${log.status}
+          </span>
+        </td>
+        <td>
+          <span class="role" style="background: ${badgeBg}; color: ${badgeColor}; padding: 0.15rem 0.5rem; border-radius: 5px; font-size: 0.75rem; font-weight: 600;">
+            ${actor}
+          </span>
+        </td>
+        <td style="max-width: 500px; word-wrap: break-word; white-space: normal; line-height: 1.4;">${log.note}</td>
+        <td style="text-align: center;">
+          <button class="btn-secondary" style="background-color: #ffe4e6; color: #b91c1c; border: 1px solid #fca5a5; padding: 0.2rem 0.4rem; font-size: 0.75rem; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center;" onclick="deleteAuditLog('${log.createdAt}')" title="Delete Log Entry">
+            <i class="fa-solid fa-trash-can"></i>
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function filterAuditLogs() {
+  const searchQuery = document.getElementById('search-audit-logs').value.toLowerCase().trim();
+  const roleFilter = document.getElementById('filter-audit-role').value;
+
+  const filtered = auditLogs.filter(log => {
+    // 1. Search Query filter (matches request ID, updatedBy, or note)
+    const matchesSearch = log.requestId.toLowerCase().includes(searchQuery) ||
+                          log.updatedBy.toLowerCase().includes(searchQuery) ||
+                          log.note.toLowerCase().includes(searchQuery) ||
+                          log.status.toLowerCase().includes(searchQuery);
+
+    // 2. Role filter
+    let matchesRole = true;
+    if (roleFilter !== 'all') {
+      if (roleFilter === 'Admin') {
+        matchesRole = log.updatedBy === 'Admin';
+      } else if (roleFilter === 'Technician') {
+        matchesRole = log.updatedBy === 'Technician' || ['Alex Mercer', 'Sarah Connor', 'Bobby'].includes(log.updatedBy);
+      } else if (roleFilter === 'Customer') {
+        matchesRole = log.updatedBy === 'Customer' || log.updatedBy === 'Dattu';
+      } else if (roleFilter === 'System') {
+        matchesRole = log.updatedBy === 'System';
+      }
+    }
+
+    return matchesSearch && matchesRole;
+  });
+
+  renderAuditLogsTable(filtered);
+}
+
+let pendingDeleteLogCreatedAt = null;
+function deleteAuditLog(createdAt) {
+  pendingDeleteLogCreatedAt = createdAt;
+  const istTime = new Date(createdAt).toLocaleString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    dateStyle: 'medium',
+    timeStyle: 'medium'
+  });
+  const msgNode = document.getElementById('confirm-delete-log-message');
+  if (msgNode) {
+    msgNode.innerHTML = `Are you sure you want to remove the audit log entry from <strong>${istTime}</strong>?`;
+  }
+  openModal('modal-confirm-delete-log');
+}
+window.deleteAuditLog = deleteAuditLog;
+
 // Global window bindings to prevent ReferenceErrors in inline HTML handlers
 window.handleChangePassword = handleChangePassword;
 window.handleForgotPassword = handleForgotPassword;
@@ -1577,3 +2026,8 @@ window.showForgotPasswordForm = showForgotPasswordForm;
 window.loadEmailConfig = loadEmailConfig;
 window.testMailConnection = testMailConnection;
 window.loadAdminTechJobs = loadAdminTechJobs;
+window.openSettingsPasswordModal = openSettingsPasswordModal;
+window.handleConfirmSettingsPassword = handleConfirmSettingsPassword;
+window.loadAdminAuditReport = loadAdminAuditReport;
+window.filterAuditLogs = filterAuditLogs;
+

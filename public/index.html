@@ -46,6 +46,9 @@
           <i class="fa-solid fa-user-circle" style="font-size: 1.25rem;"></i>
           <span id="user-display-name">User</span>
           <span id="user-display-role" class="role">Role</span>
+          <button id="admin-settings-btn" class="btn-icon" title="Email & SMTP Settings" style="margin-left: 0.5rem; width: 32px; height: 32px; font-size: 0.9rem; display: none;" onclick="openSettingsPasswordModal()">
+            <i class="fa-solid fa-gear"></i>
+          </button>
           <button id="change-password-trigger-btn" class="btn-icon" title="Change Password" style="margin-left: 0.5rem; width: 32px; height: 32px; font-size: 0.9rem;" onclick="openModal('modal-change-password')">
             <i class="fa-solid fa-key"></i>
           </button>
@@ -258,47 +261,53 @@
           </div>
           
           <div class="stats-grid">
-            <div class="stat-card">
+            <div class="stat-card stat-card-clickable" onclick="showDashboardStatDetails('customers')" title="Click to view all customers">
               <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
               <div class="stat-info">
                 <h4>Total Customers</h4>
                 <div class="value" id="stat-admin-customers">0</div>
               </div>
+              <div class="stat-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card stat-card-clickable" onclick="showDashboardStatDetails('technicians')" title="Click to view all technicians">
               <div class="stat-icon"><i class="fa-solid fa-user-gear"></i></div>
               <div class="stat-info">
                 <h4>Total Technicians</h4>
                 <div class="value" id="stat-admin-technicians">0</div>
               </div>
+              <div class="stat-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card stat-card-clickable" onclick="showDashboardStatDetails('active')" title="Click to view active repairs">
               <div class="stat-icon"><i class="fa-solid fa-wrench"></i></div>
               <div class="stat-info">
                 <h4>Active Repairs</h4>
                 <div class="value" id="stat-admin-active">0</div>
               </div>
+              <div class="stat-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card stat-card-clickable" onclick="showDashboardStatDetails('completed')" title="Click to view completed repairs">
               <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
               <div class="stat-info">
                 <h4>Completed Repairs</h4>
                 <div class="value" id="stat-admin-completed">0</div>
               </div>
+              <div class="stat-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card stat-card-clickable" onclick="showDashboardStatDetails('pending')" title="Click to view pending repairs">
               <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
               <div class="stat-info">
                 <h4>Pending Repairs</h4>
                 <div class="value" id="stat-admin-pending">0</div>
               </div>
+              <div class="stat-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card stat-card-clickable" onclick="showDashboardStatDetails('revenue')" title="Click to view revenue breakdown">
               <div class="stat-icon revenue"><i class="fa-solid fa-indian-rupee-sign"></i></div>
               <div class="stat-info">
                 <h4>Total Revenue</h4>
                 <div class="value" id="stat-admin-revenue">₹0</div>
               </div>
+              <div class="stat-card-arrow"><i class="fa-solid fa-chevron-right"></i></div>
             </div>
           </div>
         </div>
@@ -356,7 +365,9 @@
                   <th>Email</th>
                   <th>Phone</th>
                   <th>Role</th>
+                  <th>Password</th>
                   <th>Details/Address</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -481,6 +492,52 @@
                   <th>Problem</th>
                   <th>Status</th>
                   <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Admin Audit Report -->
+        <div id="view-admin-audit-report" class="view-section">
+          <div class="view-header">
+            <h2>System Audit Report</h2>
+            <div style="display: flex; gap: 1rem;">
+              <button class="btn-primary" style="width: auto;" onclick="loadAdminAuditReport()">
+                <i class="fa-solid fa-arrows-rotate" style="margin-right: 0.5rem;"></i>Refresh Logs
+              </button>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header" style="flex-wrap: wrap; gap: 1rem;">
+              <h3>Interaction Lifecycle & Activity Audit Logs</h3>
+              <div style="display: flex; gap: 1rem; align-items: center; margin-left: auto;">
+                <div class="table-search" style="margin: 0; min-width: 250px;">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                  <input type="text" id="search-audit-logs" placeholder="Search by Request ID, Actor, or Notes..." onkeyup="filterAuditLogs()">
+                </div>
+                <select id="filter-audit-role" onchange="filterAuditLogs()" style="padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); font-family: inherit;">
+                  <option value="all">All Actors</option>
+                  <option value="Admin">Admin</option>
+                  <option value="Technician">Technician</option>
+                  <option value="Customer">Customer</option>
+                  <option value="System">System</option>
+                </select>
+              </div>
+            </div>
+            <table id="admin-audit-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 160px;">Timestamp (IST)</th>
+                  <th>Request ID</th>
+                  <th>Status/Milestone</th>
+                  <th>Updated By</th>
+                  <th>Interaction Details</th>
+                  <th style="text-align: center; width: 80px;">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -1096,6 +1153,133 @@
           <button type="submit" class="btn-primary" style="width: auto;">Update Password</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS PASSWORD CONFIRMATION -->
+  <div id="modal-settings-password" class="modal">
+    <div class="modal-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-lock" style="color: var(--accent-blue); margin-right: 0.5rem;"></i>Verify Password</h3>
+        <button class="btn-icon" onclick="closeModal('modal-settings-password')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <form id="settings-password-form" onsubmit="handleConfirmSettingsPassword(event)">
+        <div class="modal-body">
+          <p style="margin-bottom: 1.25rem; color: var(--text-secondary); font-size: 0.9rem;">
+            Please verify your password to access Email & SMTP configuration.
+          </p>
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label for="settings-admin-password">Administrator Password</label>
+            <input type="password" id="settings-admin-password" required placeholder="••••••••">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-settings-password')">Cancel</button>
+          <button type="submit" class="btn-primary" style="width: auto;">Verify Password</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM DELETE REQUEST -->
+  <div id="modal-confirm-delete-request" class="modal">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-danger); margin-right: 0.5rem;"></i>Confirm Request Removal</h3>
+        <button class="btn-icon" onclick="closeModal('modal-confirm-delete-request')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-delete-request-message" style="margin-bottom: 1rem; color: var(--text-primary); font-size: 0.95rem; font-weight: 500;">
+          Are you sure you want to remove this service request?
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4;">
+          This action will immediately delete the service request, estimates, and invoices associated with it. This cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-confirm-delete-request')">Cancel</button>
+        <button type="button" id="confirm-delete-request-btn" class="btn-primary" style="background-color: var(--accent-danger); border-color: var(--accent-danger); width: auto;">Confirm Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM DELETE AUDIT LOG -->
+  <div id="modal-confirm-delete-log" class="modal">
+    <div class="modal-card" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-danger); margin-right: 0.5rem;"></i>Confirm Log Removal</h3>
+        <button class="btn-icon" onclick="closeModal('modal-confirm-delete-log')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-delete-log-message" style="margin-bottom: 1rem; color: var(--text-primary); font-size: 0.95rem; font-weight: 500;">
+          Are you sure you want to remove this audit log entry?
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4;">
+          This action will immediately remove this log entry from the System Audit Report.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-confirm-delete-log')">Cancel</button>
+        <button type="button" id="confirm-delete-log-btn" class="btn-primary" style="background-color: var(--accent-danger); border-color: var(--accent-danger); width: auto;">Confirm Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRM DELETE USER -->
+  <div id="modal-confirm-delete" class="modal">
+    <div class="modal-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-triangle-exclamation" style="color: var(--accent-danger); margin-right: 0.5rem;"></i>Confirm Removal</h3>
+        <button class="btn-icon" onclick="closeModal('modal-confirm-delete')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p id="confirm-delete-message" style="margin-bottom: 1rem; color: var(--text-primary); font-size: 0.95rem; font-weight: 500;">
+          Are you sure you want to remove this user?
+        </p>
+        <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.4;">
+          This action will immediately revoke their access to log in to the platform.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-confirm-delete')">Cancel</button>
+        <button type="button" id="confirm-delete-btn" class="btn-primary" style="background-color: var(--accent-danger); border-color: var(--accent-danger); width: auto;">Confirm Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: DASHBOARD STAT DETAILS POPUP -->
+  <div id="modal-dashboard-stats" class="modal">
+    <div class="modal-card" style="max-width: 860px; width: 95vw;">
+      <div class="modal-header">
+        <h3 id="dashboard-stats-modal-title" style="display: flex; align-items: center; gap: 0.6rem;">
+          <i id="dashboard-stats-modal-icon" class="fa-solid fa-users"></i>
+          <span>Records</span>
+        </h3>
+        <button class="btn-icon" onclick="closeModal('modal-dashboard-stats')" style="width: 32px; height: 32px;"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" style="padding: 0;">
+        <div id="dashboard-stats-loading" style="text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+          <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.75rem; display: block;"></i>
+          Loading records...
+        </div>
+        <div id="dashboard-stats-content" style="display: none; overflow-x: auto;">
+          <table id="dashboard-stats-table" style="width: 100%; border-collapse: collapse;">
+            <thead id="dashboard-stats-thead">
+              <tr><!-- Dynamically filled --></tr>
+            </thead>
+            <tbody id="dashboard-stats-tbody">
+              <!-- Dynamically filled -->
+            </tbody>
+          </table>
+        </div>
+        <div id="dashboard-stats-empty" style="display: none; text-align: center; padding: 2.5rem; color: var(--text-secondary);">
+          <i class="fa-solid fa-inbox" style="font-size: 2rem; margin-bottom: 0.75rem; display: block; opacity: 0.4;"></i>
+          No records found.
+        </div>
+      </div>
+      <div class="modal-footer" style="justify-content: flex-end;">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-dashboard-stats')">Close</button>
+      </div>
     </div>
   </div>
 
