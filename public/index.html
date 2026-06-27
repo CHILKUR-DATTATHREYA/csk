@@ -1143,6 +1143,15 @@
         </div>
       </div>
     </div>
+    <!-- Non-printable action bar shown after signature -->
+    <div id="invoice-action-bar" style="display:none; text-align:center; padding:1.5rem; background:#f8fafc; border-top:1px solid #e2e8f0; gap:1rem; flex-wrap:wrap; justify-content:center;" class="no-print">
+      <button class="btn-primary" style="width:auto; background:var(--accent-success); display:inline-flex; align-items:center; gap:0.5rem;" onclick="window.print()">
+        <i class="fa-solid fa-download"></i> Download &amp; Print Invoice
+      </button>
+      <button class="btn-secondary" style="width:auto; display:inline-flex; align-items:center; gap:0.5rem;" onclick="document.getElementById('print-area').classList.remove('active'); document.getElementById('invoice-action-bar').style.display='none';">
+        <i class="fa-solid fa-xmark"></i> Close
+      </button>
+    </div>
   </div>
 
 

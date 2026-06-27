@@ -1265,8 +1265,9 @@ async function printInvoice(requestId) {
       sigPlaceholder.style.display = 'block';
     }
     
-    // Trigger Print
-    // window.print();
+    // Show action bar with Download/Print and Close buttons
+    const actionBar = document.getElementById('invoice-action-bar');
+    if (actionBar) actionBar.style.display = 'flex';
   } catch (err) {}
 }
 
