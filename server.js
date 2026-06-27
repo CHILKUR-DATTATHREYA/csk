@@ -37,6 +37,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = 'csk_super_secret_key_2026';
 
+const getAppUrl = () => {
+  if (process.env.APP_URL) return process.env.APP_URL;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return 'https://csk-gamma.vercel.app';
+};
+
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -225,7 +231,7 @@ app.post('/api/auth/register', (req, res) => {
       <p>Through your customer dashboard, you can track active TV repair jobs, review and approve inspection estimates, and sign final invoices online.</p>
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="http://localhost:3000" style="display: inline-block; padding: 12px 28px; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 15px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">Go to Website Dashboard</a>
+        <a href="${getAppUrl()}" style="display: inline-block; padding: 12px 28px; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 15px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">Go to Website Dashboard</a>
       </div>
     `
   });
@@ -237,7 +243,7 @@ app.post('/api/auth/register', (req, res) => {
   }).catch(err => console.error("Error sending welcome email:", err.message));
 
   // Send Welcome SMS
-  const welcomeSmsMessage = `Welcome to CSK Electronics, ${name}!\nYour account has been registered successfully.\nYou can now login using your email: ${email}\nLogin: http://localhost:3000`;
+  const welcomeSmsMessage = `Welcome to CSK Electronics, ${name}!\nYour account has been registered successfully.\nYou can now login using your email: ${email}\nLogin: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(phone || 'N/A', welcomeSmsMessage);
   
   res.status(201).json({ message: 'Registration successful' });
@@ -361,7 +367,7 @@ app.post('/api/auth/forgot-password', (req, res) => {
   }).catch(err => console.error("Error sending forgot password email:", err.message));
   
   // Send Password Reset SMS
-  const smsMessage = `CSK Electronics Alert:\nYour password has been reset. Temporary password: ${tempPassword}\nPlease login and change it: http://localhost:3000`;
+  const smsMessage = `CSK Electronics Alert:\nYour password has been reset. Temporary password: ${tempPassword}\nPlease login and change it: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(user.phone || 'N/A', smsMessage);
   
   res.json({ message: 'Temporary password sent to your registered email and mobile number!' });
@@ -561,7 +567,7 @@ app.post('/api/admin/users', authenticateToken, requireRole(['admin']), async (r
       ` : ''}
 
       <div style="text-align: center; margin: 30px 0;">
-        <a href="http://localhost:3000" style="display: inline-block; padding: 12px 28px; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 15px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">Log In to Dashboard</a>
+        <a href="${getAppUrl()}" style="display: inline-block; padding: 12px 28px; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 15px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">Log In to Dashboard</a>
       </div>
     `
   });
@@ -798,7 +804,7 @@ app.post('/api/admin/assign', authenticateToken, requireRole(['admin']), (req, r
   const customerEmail = customer.email || 'N/A';
 
   // Send Customer SMS
-  const customerSmsMessage = `CSK Electronics Alert:\nTechnician ${technician.name} (Ph: ${technician.phone || 'N/A'}) has been assigned to your request ${requestId}.\nThey will contact you shortly.\nDetails: http://localhost:3000`;
+  const customerSmsMessage = `CSK Electronics Alert:\nTechnician ${technician.name} (Ph: ${technician.phone || 'N/A'}) has been assigned to your request ${requestId}.\nThey will contact you shortly.\nDetails: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(customerPhone, customerSmsMessage);
 
   // Send Customer Email
@@ -882,7 +888,7 @@ app.post('/api/admin/assign', authenticateToken, requireRole(['admin']), (req, r
   }).catch(err => console.error("Error sending job assignment email to technician:", err.message));
 
   // Send Technician SMS
-  const techSmsMessage = `CSK Electronics Job Alert:\nYou have been assigned to repair request ${requestId}.\nCustomer: ${customer.name || 'N/A'} (${customerPhone})\nTV: ${request.tvBrand} - ${request.tvModel}\nView: http://localhost:3000`;
+  const techSmsMessage = `CSK Electronics Job Alert:\nYou have been assigned to repair request ${requestId}.\nCustomer: ${customer.name || 'N/A'} (${customerPhone})\nTV: ${request.tvBrand} - ${request.tvModel}\nView: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(technician.phone || 'N/A', techSmsMessage);
 
   broadcast('TECHNICIAN_ASSIGNED', `Technician ${technician.name} assigned to Request ${requestId}`, {
@@ -910,6 +916,7 @@ app.post('/api/customer/request', authenticateToken, requireRole(['customer']), 
       if (num > maxIdNum) maxIdNum = num;
     }
   });
+  const customer = data.users.find(u => u.id === req.user.id) || {};
   const requestId = 'REQ-' + (maxIdNum + 1);
   
   // No automatic assignment: complaints are registered as 'New' and assignedTechId = null. Only Admin manually assigns.
@@ -920,11 +927,15 @@ app.post('/api/customer/request', authenticateToken, requireRole(['customer']), 
   const newRequest = {
     id: requestId,
     customerId: req.user.id,
+    customerName: customer.name || req.user.name || 'Customer',
+    customerPhone: customer.phone || 'N/A',
+    customerAddress: customer.address || 'N/A',
     tvBrand,
     tvModel,
     problemDesc,
     status,
     assignedTechId,
+    technicianName: null,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -935,13 +946,12 @@ app.post('/api/customer/request', authenticateToken, requireRole(['customer']), 
   db.saveData(data);
   
   // Trigger real email notifications immediately
-  const customer = data.users.find(u => u.id === req.user.id) || {};
   const customerPhone = customer.phone || 'N/A';
   const customerEmail = customer.email || req.user.email;
   const adminEmail = (data.emailConfig && data.emailConfig.defaultAdminEmail) || 'cskelectronicservices@gmail.com';
 
   // Send Simulated SMS
-  const smsMessage = `CSK Electronics Alert:\nYour complaint ${requestId} has been registered.\nTV: ${tvBrand} - ${tvModel}\nProblem: ${problemDesc}\nStatus: ${status}\nTrack: http://localhost:3000`;
+  const smsMessage = `CSK Electronics Alert:\nYour complaint ${requestId} has been registered.\nTV: ${tvBrand} - ${tvModel}\nProblem: ${problemDesc}\nStatus: ${status}\nTrack: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(customerPhone, smsMessage);
 
   // Send Customer Email
@@ -1222,7 +1232,7 @@ app.post('/api/technician/estimate', authenticateToken, requireRole(['technician
   }).catch(err => console.error("Error sending estimate email to customer:", err.message));
 
   // Send Customer SMS
-  const estimateSmsMessage = `CSK Electronics Alert:\nAn estimate has been uploaded for request ${requestId}.\nTotal: Rs. ${total.toFixed(2)}.\nApprove: http://localhost:3000`;
+  const estimateSmsMessage = `CSK Electronics Alert:\nAn estimate has been uploaded for request ${requestId}.\nTotal: Rs. ${total.toFixed(2)}.\nApprove: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(customerPhone, estimateSmsMessage);
   
   broadcast('ESTIMATE_UPLOADED', `Estimate uploaded for Request ${requestId} by Technician ${req.user.name}. Total: Rs. ${total}`, {
@@ -1289,7 +1299,7 @@ app.post('/api/technician/complete', authenticateToken, requireRole(['technician
   const customerEmail = customer.email || 'cust1@csk.com';
 
   // Send Simulated SMS
-  const smsMessage = `CSK Electronics Update:\nRepair for request ${requestId} has been completed.\nInvoice ${invoiceNum} generated (Total: Rs. ${total.toFixed(2)}).\nPlease sign digitally: http://localhost:3000`;
+  const smsMessage = `CSK Electronics Update:\nRepair for request ${requestId} has been completed.\nInvoice ${invoiceNum} generated (Total: Rs. ${total.toFixed(2)}).\nPlease sign digitally: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(customer.phone || 'N/A', smsMessage);
 
   mailService.generateInvoicePDF(request, newInvoice, customer, technician).then(pdfBuffer => {
