@@ -1685,3 +1685,168 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--accent-blue) !important;
   box-shadow: 0 0 0 3px var(--accent-blue-light), 0 0 12px var(--neon-glow-color-active) !important;
 }
+
+/* About Us Styling on Login Page */
+#about-us-container {
+  max-height: 480px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-top: 1rem;
+}
+
+/* Custom Scrollbar for About Us */
+#about-us-container::-webkit-scrollbar {
+  width: 6px;
+}
+#about-us-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+#about-us-container::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+.about-section {
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.about-section h3 {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  border-bottom: 1.5px solid var(--border-color);
+  padding-bottom: 0.25rem;
+}
+
+.about-section p {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.disclaimer-box {
+  background: #fff5f5;
+  border: 1.5px solid #fecaca !important;
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  box-shadow: none !important;
+}
+.disclaimer-box i {
+  color: #ef4444;
+  font-size: 1.15rem;
+  margin-top: 0.15rem;
+}
+.disclaimer-box strong {
+  color: #991b1b;
+  font-size: 0.85rem;
+  display: block;
+}
+.disclaimer-box p {
+  margin-top: 0.2rem;
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.services-box {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  box-shadow: none !important;
+}
+.services-box i {
+  color: var(--accent-blue);
+  font-size: 1.15rem;
+  margin-top: 0.15rem;
+}
+.services-box strong {
+  color: #1e293b;
+  font-size: 0.85rem;
+  display: block;
+}
+.services-box p {
+  margin-top: 0.2rem;
+  color: var(--text-secondary);
+}
+
+.brand-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.chip {
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  color: #fff;
+  text-align: center;
+  display: inline-block;
+}
+
+.chip-samsung { background: #1428A0; }
+.chip-sony { background: #000; }
+.chip-lg { background: #a50034; }
+.chip-panasonic { background: #003087; }
+.chip-mi { background: #ff6900; }
+.chip-philips { background: #0047bb; }
+.chip-toshiba { background: #e4002b; }
+.chip-oneplus { background: #f5010c; }
+.chip-tcl { background: #e4002b; }
+
+.appliance-box {
+  background: #f0fdf4;
+  border: 1.5px solid #bbf7d0 !important;
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: none !important;
+}
+.appliance-box i {
+  color: #16a34a;
+  font-size: 1.15rem;
+}
+.appliance-box span {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #15803d;
+}
+
+.promise-box {
+  background: #f0fdfa;
+  border: 1.5px solid #ccfbf1 !important;
+  border-radius: 12px;
+  padding: 0.85rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  box-shadow: none !important;
+}
+.promise-box i {
+  color: #0d9488;
+  font-size: 1.15rem;
+  margin-top: 0.15rem;
+}
+.promise-box strong {
+  color: #115e59;
+  font-size: 0.85rem;
+  display: block;
+}
+.promise-box p {
+  margin-top: 0.2rem;
+  color: #134e4a;
+}
+

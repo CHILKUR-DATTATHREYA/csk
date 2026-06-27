@@ -286,7 +286,7 @@ app.post('/api/auth/login', async (req, res) => {
   
   // Allow login using registered email OR admin fallback if u-admin
   let user = data.users.find(u => u.email.toLowerCase() === loginEmail);
-  if (!user && loginEmail === 'admin@csk.com') {
+  if (!user && loginEmail === 'cskelectronicservices@gmail.com') {
     user = data.users.find(u => u.role === 'admin');
   }
   
@@ -822,7 +822,7 @@ app.post('/api/admin/assign', authenticateToken, requireRole(['admin']), (req, r
         </tr>
         <tr>
           <td class="label">Technician Phone</td>
-          <td class="value">${technician.phone || '1800-456-7890'}</td>
+          <td class="value">${technician.phone || '7075750640, 7981785948'}</td>
         </tr>
         <tr>
           <td class="label">Status</td>
@@ -902,7 +902,15 @@ app.post('/api/customer/request', authenticateToken, requireRole(['customer']), 
   }
   
   const data = db.getData();
-  const requestId = 'REQ-' + (1000 + data.requests.length + 1);
+  let maxIdNum = 1000;
+  data.requests.forEach(r => {
+    const match = r.id.match(/^REQ-(\d+)$/);
+    if (match) {
+      const num = parseInt(match[1], 10);
+      if (num > maxIdNum) maxIdNum = num;
+    }
+  });
+  const requestId = 'REQ-' + (maxIdNum + 1);
   
   // No automatic assignment: complaints are registered as 'New' and assignedTechId = null. Only Admin manually assigns.
   let assignedTechId = null;
@@ -930,7 +938,7 @@ app.post('/api/customer/request', authenticateToken, requireRole(['customer']), 
   const customer = data.users.find(u => u.id === req.user.id) || {};
   const customerPhone = customer.phone || 'N/A';
   const customerEmail = customer.email || req.user.email;
-  const adminEmail = (data.emailConfig && data.emailConfig.defaultAdminEmail) || 'admin@csk.com';
+  const adminEmail = (data.emailConfig && data.emailConfig.defaultAdminEmail) || 'cskelectronicservices@gmail.com';
 
   // Send Simulated SMS
   const smsMessage = `CSK Electronics Alert:\nYour complaint ${requestId} has been registered.\nTV: ${tvBrand} - ${tvModel}\nProblem: ${problemDesc}\nStatus: ${status}\nTrack: http://localhost:3000`;

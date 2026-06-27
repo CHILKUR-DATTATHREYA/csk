@@ -14,18 +14,18 @@ function initDb() {
         smtpSecure: false,
         smtpUser: "",
         smtpPass: "",
-        defaultFrom: "CSK Electronics <support@cskelectronics.com>",
-        defaultAdminEmail: "admin@csk.com"
+        defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
+        defaultAdminEmail: "cskelectronicservices@gmail.com"
       },
       users: [
         {
           id: "u-admin",
-          email: "admin@csk.com",
+          email: "cskelectronicservices@gmail.com",
           passwordHash: bcrypt.hashSync("admin123", salt),
           name: "CSK Admin",
           role: "admin",
-          phone: "1800-456-7890",
-          address: "CSK Service HQ, Chennai"
+          phone: "7075750640, 7981785948",
+          address: "Service Center, Kothapet, Nagole, Hyderabad"
         },
         {
           id: "u-tech1",
@@ -143,8 +143,8 @@ function getData() {
       smtpSecure: false,
       smtpUser: "",
       smtpPass: "",
-      defaultFrom: "CSK Electronics <support@cskelectronics.com>",
-      defaultAdminEmail: "admin@csk.com"
+      defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
+      defaultAdminEmail: "cskelectronicservices@gmail.com"
     };
     fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
   } else if (data.emailConfig.defaultAdminEmail) {

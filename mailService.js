@@ -88,7 +88,7 @@ function generateInvoicePDF(request, invoice, customer, technician) {
       // Header
       doc.fontSize(22).fillColor('#1e3a8a').text('CSK ELECTRONICS SERVICES', { align: 'center' });
       doc.fontSize(10).fillColor('#475569').text('Expert TV Repair, Spares & Board Services', { align: 'center' });
-      doc.text('1800-456-7890 | support@cskelectronics.com', { align: 'center' });
+      doc.text('7075750640, 7981785948 | cskelectronicservices@gmail.com', { align: 'center' });
       doc.moveDown(1.5);
 
       doc.moveTo(50, doc.y).lineTo(562, doc.y).strokeColor('#cbd5e1').stroke();
@@ -113,8 +113,8 @@ function generateInvoicePDF(request, invoice, customer, technician) {
       doc.fontSize(12).fillColor('#1e3a8a').text('Technician Information', 320, yPos);
       doc.fontSize(10).fillColor('#334155');
       doc.text(`Name: ${technician ? technician.name : 'CSK Admin'}`);
-      doc.text(`Phone: ${technician ? technician.phone : '1800-456-7890'}`);
-      doc.text(`Email: ${technician ? technician.email : 'admin@csk.com'}`);
+      doc.text(`Phone: ${technician ? technician.phone : '7075750640, 7981785948'}`);
+      doc.text(`Email: ${technician ? technician.email : 'cskelectronicservices@gmail.com'}`);
       doc.moveDown(2);
 
       // Repair Info
@@ -332,8 +332,8 @@ function buildEmailTemplate({ title, preheader, bodyHtml }) {
       </div>
       <div class="footer">
         <p><strong>CSK Electronics Services</strong></p>
-        <p>1800-456-7890 | support@cskelectronics.com</p>
-        <p>Service HQ, Chennai, Tamil Nadu</p>
+        <p>7075750640, 7981785948 | cskelectronicservices@gmail.com</p>
+        <p>Service Center, Kothapet, Nagole, Hyderabad</p>
         <p style="margin-top: 15px; font-size: 11px; color: #94a3b8;">This is an automated system notification from CSK Electronics. Please do not reply directly to this email.</p>
       </div>
     </div>

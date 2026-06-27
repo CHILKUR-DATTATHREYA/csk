@@ -285,13 +285,18 @@ function switchAuthTab(type) {
   document.querySelectorAll('.auth-tab').forEach(tab => tab.classList.remove('active'));
   document.getElementById('login-form').style.display = 'none';
   document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-password-form').style.display = 'none';
+  document.getElementById('about-us-container').style.display = 'none';
   
   if (type === 'login') {
     document.getElementById('tab-login').classList.add('active');
     document.getElementById('login-form').style.display = 'block';
-  } else {
+  } else if (type === 'register') {
     document.getElementById('tab-register').classList.add('active');
     document.getElementById('register-form').style.display = 'block';
+  } else if (type === 'about') {
+    document.getElementById('tab-about').classList.add('active');
+    document.getElementById('about-us-container').style.display = 'block';
   }
 }
 

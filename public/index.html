@@ -186,6 +186,7 @@
             <div class="auth-tabs">
               <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
               <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+              <button id="tab-about" class="auth-tab" onclick="switchAuthTab('about')">About Us</button>
             </div>
 
             <!-- Login Form -->
@@ -200,13 +201,6 @@
               </div>
               <div class="form-group" style="text-align: right; margin-bottom: 1.5rem;">
                 <a href="#" onclick="showForgotPasswordForm(event)" class="forgot-password-link" style="color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 500;">Forgot Password?</a>
-              </div>
-              <button type="submit" class="btn-primary">Sign In</button>
-              <div class="auth-demo-creds">
-                <p><strong>Demo Accounts:</strong></p>
-                <p>Admin: admin@csk.com / admin123</p>
-                <p>Tech: tech1@csk.com / tech123</p>
-                <p>Customer: cust1@csk.com / cust123</p>
               </div>
             </form>
 
@@ -249,6 +243,62 @@
               </div>
               <button type="submit" class="btn-primary">Register Account</button>
             </form>
+
+            <!-- About Us Section -->
+            <div id="about-us-container" style="display: none; padding-top: 1rem;">
+              <div class="about-section">
+                <h3>Who We Are</h3>
+                <p>CSK Electronics is a premium provider of high-quality LED, LCD, OLED, and Smart TV installation, diagnostics, and expert repair services. Our certified engineers deliver professional, reliable, and affordable TV repair solutions directly to your doorstep.</p>
+              </div>
+
+              <div class="about-section disclaimer-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                  <strong>Legal Disclaimer</strong>
+                  <p>This is an unauthorized TV Services. We are not directly affiliated with or authorized by any specific brand.</p>
+                </div>
+              </div>
+
+              <div class="about-section services-box">
+                <i class="fa-solid fa-briefcase"></i>
+                <div>
+                  <strong>Our Services</strong>
+                  <p>All Type of TV Brands We Under Take Service. Doorstep service is available, including pickup and delivery of the TV after repair.</p>
+                </div>
+              </div>
+
+              <div class="about-section">
+                <h3>Supported TV Brands (Expert Repair)</h3>
+                <div class="brand-chips">
+                  <span class="chip chip-samsung">SAMSUNG</span>
+                  <span class="chip chip-sony">SONY</span>
+                  <span class="chip chip-lg">LG</span>
+                  <span class="chip chip-panasonic">PANASONIC</span>
+                  <span class="chip chip-mi">MI</span>
+                  <span class="chip chip-philips">PHILIPS</span>
+                  <span class="chip chip-toshiba">TOSHIBA</span>
+                  <span class="chip chip-oneplus">ONEPLUS</span>
+                  <span class="chip chip-tcl">TCL</span>
+                </div>
+              </div>
+
+              <div class="about-section">
+                <h3>Appliances We Service</h3>
+                <div class="appliance-box">
+                  <i class="fa-solid fa-tv"></i>
+                  <span>LED / LCD / OLED & Smart TVs</span>
+                </div>
+              </div>
+
+              <div class="about-section promise-box">
+                <i class="fa-solid fa-circle-check"></i>
+                <div>
+                  <strong>Our Promise</strong>
+                  <p><strong>90-Day Warranty on All Repairs</strong><br>
+                  All replacement parts used during repair carry a standard 90-day warranty. Every invoice generated through this app is an authorized tax invoice containing valid corporate registry details.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -432,7 +482,7 @@
 
               <div class="form-group">
                 <label for="default-from">Sender Email Address (From Header)</label>
-                <input type="text" id="default-from" required placeholder="CSK Electronics &lt;support@cskelectronics.com&gt;">
+                <input type="text" id="default-from" required placeholder="CSK Electronics &lt;cskelectronicservices@gmail.com&gt;">
               </div>
 
               <div class="form-group">
@@ -995,7 +1045,7 @@
         <div>
           <h2>CSK Electronics Services</h2>
           <p>Expert TV Repair, Spares & Board Services</p>
-          <p>1800-456-7890 | support@cskelectronics.com</p>
+          <p>7075750640, 7981785948 | cskelectronicservices@gmail.com</p>
         </div>
         <div style="text-align: right;">
           <h3 style="font-size: 1.5rem; color: #64748b;" id="prt-inv-title">TAX INVOICE</h3>

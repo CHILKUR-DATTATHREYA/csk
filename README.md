@@ -263,7 +263,7 @@ npm start
 
 | Role | Email | Password |
 |:---|:---|:---|
-| 🔴 **Administrator** | `admin@csk.com` | `admin123` |
+| 🔴 **Administrator** | `cskelectronicservices@gmail.com` | `admin123` |
 | 🟠 **Technician** | `tech1@csk.com` | `tech123` |
 | 🔵 **Customer** | `cust1@csk.com` | `cust123` |
 
