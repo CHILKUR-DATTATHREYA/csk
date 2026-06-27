@@ -1537,8 +1537,7 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Ensure DB initialized
-db.initDb();
+// DB initializes lazily on first getData() call
 
 // START SERVER
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
