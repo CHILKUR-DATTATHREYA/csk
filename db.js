@@ -6,189 +6,155 @@ const https = require('https');
 const localDbPath = path.join(__dirname, 'db.json');
 const EXTENDSCLASS_BIN = 'https://extendsclass.com/api/json-storage/bin/cadceef';
 
+// In-memory state
 let cachedData = null;
 let dirty = false;
 
-function getDbPath() {
-  if (process.env.VERCEL) {
-    const tmpPath = path.join('/tmp', 'db.json');
-    if (!fs.existsSync(tmpPath) && fs.existsSync(localDbPath)) {
-      try {
-        fs.copyFileSync(localDbPath, tmpPath);
-      } catch (e) {}
-    }
-    return tmpPath;
-  }
-  return localDbPath;
-}
+// ─── Cloud Sync ──────────────────────────────────────────────────────────────
 
-function initDb() {
-  const targetPath = getDbPath();
-  if (!fs.existsSync(targetPath)) {
-    const salt = bcrypt.genSaltSync(10);
-    const initialData = {
-      emailConfig: {
-        smtpHost: "smtp.gmail.com",
-        smtpPort: 465,
-        smtpSecure: true,
-        smtpUser: "cskelectronicservices@gmail.com",
-        smtpPass: "nlgunutixumkpejc",
-        defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
-        defaultAdminEmail: "cskelectronicservices@gmail.com"
-      },
-      users: [
-        {
-          id: "u-admin",
-          email: "cskelectronicservices@gmail.com",
-          passwordHash: bcrypt.hashSync("admin123", salt),
-          name: "CSK Admin",
-          role: "admin",
-          phone: "7075750640, 7981785948",
-          address: "Service Center, Kothapet, Nagole, Hyderabad"
-        },
-        {
-          id: "u-tech1",
-          email: "tech1@csk.com",
-          passwordHash: bcrypt.hashSync("tech123", salt),
-          plainPassword: "tech123",
-          name: "Alex Mercer",
-          role: "technician",
-          phone: "9876543212",
-          specialization: "OLED & QLED Panels"
-        },
-        {
-          id: "u-tech2",
-          email: "tech2@csk.com",
-          passwordHash: bcrypt.hashSync("tech123", salt),
-          plainPassword: "tech123",
-          name: "Sarah Connor",
-          role: "technician",
-          phone: "9876543213",
-          specialization: "Motherboards & Power Boards"
-        },
-        {
-          id: "u-cust1",
-          email: "cust1@csk.com",
-          passwordHash: bcrypt.hashSync("cust123", salt),
-          name: "John Doe",
-          role: "customer",
-          phone: "9876543210",
-          address: "123 Main Street, Bangalore, Karnataka"
-        },
-        {
-          id: "u-cust2",
-          email: "cust2@csk.com",
-          passwordHash: bcrypt.hashSync("cust123", salt),
-          name: "Jane Smith",
-          role: "customer",
-          phone: "9876543211",
-          address: "456 Oak Avenue, Chennai, Tamil Nadu"
-        }
-      ],
-      requests: [],
-      invoices: [],
-      estimates: [],
-      updates: []
-    };
-    try {
-      fs.writeFileSync(targetPath, JSON.stringify(initialData, null, 2), 'utf-8');
-    } catch (e) {}
-  }
-}
-
-// Async Cloud Sync Functions
+/**
+ * Pull the latest database from cloud into memory.
+ * Always overwrites the in-memory cache.
+ */
 function pullLatest() {
   return new Promise((resolve, reject) => {
-    https.get(EXTENDSCLASS_BIN, res => {
+    const req = https.request(EXTENDSCLASS_BIN, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    }, res => {
       let body = '';
       res.on('data', chunk => body += chunk);
       res.on('end', () => {
         try {
           const parsed = JSON.parse(body);
-          if (parsed && parsed.users) {
-            const targetPath = getDbPath();
-            fs.writeFileSync(targetPath, body, 'utf8');
+          if (parsed && parsed.users && Array.isArray(parsed.users)) {
+            // Self-heal structure
+            if (!parsed.updates) parsed.updates = [];
+            if (!parsed.requests) parsed.requests = [];
+            if (!parsed.invoices) parsed.invoices = [];
+            if (!parsed.estimates) parsed.estimates = [];
+            if (!parsed.auditLogs) parsed.auditLogs = [];
+
             cachedData = parsed;
             dirty = false;
             resolve(parsed);
           } else {
-            reject(new Error('Invalid database format from cloud'));
+            // Cloud returned unexpected data — fall back to local file
+            console.warn('[DB] Cloud data invalid, falling back to local file');
+            resolve(_loadLocal());
           }
         } catch (e) {
-          reject(e);
+          console.warn('[DB] Failed to parse cloud data:', e.message, '— using local file');
+          resolve(_loadLocal());
         }
       });
-    }).on('error', err => {
-      reject(err);
     });
+    req.on('error', err => {
+      console.warn('[DB] Cloud pull error:', err.message, '— using local file');
+      resolve(_loadLocal());
+    });
+    req.setTimeout(8000, () => {
+      req.destroy();
+      console.warn('[DB] Cloud pull timeout — using local file');
+      resolve(_loadLocal());
+    });
+    req.end();
   });
 }
 
+/**
+ * Push in-memory cache to cloud.
+ * IMPORTANT: always pushes cachedData (memory), never reads from disk.
+ */
 function pushLatest() {
   return new Promise((resolve, reject) => {
-    const targetPath = getDbPath();
-    let payload;
-    try {
-      payload = fs.readFileSync(targetPath, 'utf8');
-    } catch (e) {
-      return reject(e);
+    if (!cachedData) {
+      return resolve(); // Nothing to push
     }
+
+    const payload = JSON.stringify(cachedData, null, 2);
 
     const req = https.request(EXTENDSCLASS_BIN, {
       method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(payload)
       }
     }, res => {
-      res.on('data', () => {});
+      let body = '';
+      res.on('data', chunk => body += chunk);
       res.on('end', () => {
         if (res.statusCode === 200) {
           dirty = false;
           resolve();
         } else {
-          reject(new Error(`Failed to upload: status ${res.statusCode}`));
+          reject(new Error(`Cloud push failed: HTTP ${res.statusCode} — ${body}`));
         }
       });
     });
-    req.on('error', err => {
-      reject(err);
+
+    req.on('error', err => reject(err));
+    req.setTimeout(8000, () => {
+      req.destroy();
+      reject(new Error('Cloud push timeout'));
     });
+
     req.write(payload);
     req.end();
   });
 }
 
-function getData() {
-  if (cachedData) {
-    return cachedData;
-  }
-  initDb();
-  const targetPath = getDbPath();
+// ─── Local Fallback ──────────────────────────────────────────────────────────
+
+function _loadLocal() {
   try {
-    const raw = fs.readFileSync(targetPath, 'utf-8');
+    const raw = fs.readFileSync(localDbPath, 'utf-8');
     const data = JSON.parse(raw);
-    
-    // Self-healing database structure
     if (!data.updates) data.updates = [];
     if (!data.requests) data.requests = [];
     if (!data.invoices) data.invoices = [];
     if (!data.estimates) data.estimates = [];
-
+    if (!data.auditLogs) data.auditLogs = [];
     cachedData = data;
     return data;
   } catch (err) {
-    return { emailConfig: {}, users: [], requests: [], invoices: [], estimates: [], updates: [] };
+    const empty = { emailConfig: {}, users: [], requests: [], invoices: [], estimates: [], updates: [], auditLogs: [] };
+    cachedData = empty;
+    return empty;
   }
 }
 
+// ─── Public API ──────────────────────────────────────────────────────────────
+
+/**
+ * Get the in-memory database. Always returns the current cache.
+ * The middleware ensures pullLatest() is called before every API request.
+ */
+function getData() {
+  if (cachedData) return cachedData;
+  return _loadLocal();
+}
+
+/**
+ * Write data to in-memory cache and mark dirty for cloud push.
+ * Also writes to local disk for local dev persistence.
+ */
 function saveData(data) {
+  // Self-heal
+  if (!data.updates) data.updates = [];
+  if (!data.requests) data.requests = [];
+  if (!data.invoices) data.invoices = [];
+  if (!data.estimates) data.estimates = [];
+  if (!data.auditLogs) data.auditLogs = [];
+
   cachedData = data;
   dirty = true;
-  const targetPath = getDbPath();
+
+  // Write to local disk (for local dev — not used on Vercel for cloud sync)
   try {
-    fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
+    fs.writeFileSync(localDbPath, JSON.stringify(data, null, 2), 'utf-8');
   } catch (e) {
-    console.error('DB write warning (local write):', e.message);
+    // Non-fatal on Vercel (read-only filesystem except /tmp)
   }
 }
 
@@ -196,10 +162,13 @@ function isDirty() {
   return dirty;
 }
 
+function getDbPath() {
+  return localDbPath;
+}
+
 module.exports = {
   getData,
   saveData,
-  initDb,
   pullLatest,
   pushLatest,
   isDirty,
