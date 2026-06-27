@@ -1023,19 +1023,24 @@ tr:last-child td {
     display: none !important;
   }
   
-  #print-area {
+  #print-area, #print-area.active {
     display: block !important;
     position: static !important;
+    top: auto !important;
+    left: auto !important;
     width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
     padding: 0 !important;
     margin: 0 !important;
+    background-color: #ffffff !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   
   .invoice-container {
     border: none !important;
-    padding: 1rem 0 !important;
+    padding: 0.5rem 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
