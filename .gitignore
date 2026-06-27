@@ -1,5 +1,5 @@
 node_modules/
-db.json
+# db.json is committed as the seed file for Vercel (live data is in cloud)
 *.log
 .env
 firebase-service-account.json

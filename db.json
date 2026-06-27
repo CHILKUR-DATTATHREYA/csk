@@ -1,0 +1,27 @@
+{
+  "emailConfig": {
+    "smtpHost": "smtp.gmail.com",
+    "smtpPort": 587,
+    "smtpSecure": false,
+    "smtpUser": "cskelectronicservices@gmail.com",
+    "smtpPass": "nlgunutixumkpejc",
+    "defaultFrom": "CSK Electronics <cskelectronicservices@gmail.com>",
+    "defaultAdminEmail": "cskelectronicservices@gmail.com"
+  },
+  "users": [
+    {
+      "id": "u-admin",
+      "email": "cskelectronicservices@gmail.com",
+      "passwordHash": "$2a$10$QIqWpmZ35qTzB6zzz4cuOuJpdnAzuATJ0S2VYnjRqMRPQi6mR83g6",
+      "name": "TINKU",
+      "role": "admin",
+      "phone": "7075750640",
+      "address": "Service Center, Kothapet, Nagole, Hyderabad"
+    }
+  ],
+  "requests": [],
+  "invoices": [],
+  "estimates": [],
+  "updates": [],
+  "auditLogs": []
+}
