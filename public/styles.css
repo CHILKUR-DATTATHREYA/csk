@@ -1009,27 +1009,40 @@ tr:last-child td {
 
 /* CUSTOM PRINT SYSTEM */
 @media print {
+  @page {
+    margin: 10mm;
+  }
   body {
     background-color: #ffffff !important;
     color: #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
-  #app-container, header, .sidebar, .main-content, .modal, .btn, #toast-container, button {
+  #app-container, header, .sidebar, .main-content, .modal, .btn, #toast-container, button, .no-print {
     display: none !important;
   }
   
   #print-area {
     display: block !important;
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 0;
+    position: static !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
   .invoice-container {
     border: none !important;
-    padding: 0 !important;
+    padding: 1rem 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .invoice-date-highlight, .invoice-warranty-highlight, .csk-stamp {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 }
 
