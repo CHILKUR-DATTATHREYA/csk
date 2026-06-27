@@ -2,10 +2,24 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const dbPath = path.join(__dirname, 'db.json');
+const localDbPath = path.join(__dirname, 'db.json');
+
+function getDbPath() {
+  if (process.env.VERCEL) {
+    const tmpPath = path.join('/tmp', 'db.json');
+    if (!fs.existsSync(tmpPath) && fs.existsSync(localDbPath)) {
+      try {
+        fs.copyFileSync(localDbPath, tmpPath);
+      } catch (e) {}
+    }
+    return tmpPath;
+  }
+  return localDbPath;
+}
 
 function initDb() {
-  if (!fs.existsSync(dbPath)) {
+  const targetPath = getDbPath();
+  if (!fs.existsSync(targetPath)) {
     const salt = bcrypt.genSaltSync(10);
     const initialData = {
       emailConfig: {
@@ -66,99 +80,47 @@ function initDb() {
           address: "456 Oak Avenue, Chennai, Tamil Nadu"
         }
       ],
-      requests: [
-        {
-          id: "REQ-1001",
-          customerId: "u-cust1",
-          tvBrand: "Samsung",
-          tvModel: "Neo QLED 55\"",
-          problemDesc: "Display flickering and black bars on screen edges.",
-          status: "New",
-          assignedTechId: null,
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-          updatedAt: new Date(Date.now() - 3600000 * 2).toISOString()
-        },
-        {
-          id: "REQ-1002",
-          customerId: "u-cust2",
-          tvBrand: "Sony",
-          tvModel: "Bravia OLED 65\"",
-          problemDesc: "No power, standby light is blinking red 6 times.",
-          status: "Assigned",
-          assignedTechId: "u-tech1",
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date(Date.now() - 7200000).toISOString()
-        }
-      ],
-      estimates: [
-        {
-          requestId: "REQ-1002",
-          inspectionCharge: 500,
-          sparePartsCost: 3500,
-          labourCharges: 1500,
-          additionalCharges: 200,
-          totalEstimate: 5700,
-          notes: "Power supply board replacement required.",
-          status: "Pending", // Pending, Approved, Rejected
-          updatedAt: new Date(Date.now() - 7200000).toISOString()
-        }
-      ],
+      requests: [],
       invoices: [],
-      updates: [
-        {
-          requestId: "REQ-1001",
-          status: "New",
-          note: "Service complaint registered automatically.",
-          updatedBy: "System",
-          createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
-        },
-        {
-          requestId: "REQ-1002",
-          status: "New",
-          note: "Service complaint registered automatically.",
-          updatedBy: "System",
-          createdAt: new Date(Date.now() - 86400000).toISOString()
-        },
-        {
-          requestId: "REQ-1002",
-          status: "Assigned",
-          note: "Technician Alex Mercer assigned to request by Admin.",
-          updatedBy: "Admin",
-          createdAt: new Date(Date.now() - 7200000).toISOString()
-        }
-      ]
+      auditLogs: []
     };
-    fs.writeFileSync(dbPath, JSON.stringify(initialData, null, 2), 'utf-8');
+    try {
+      fs.writeFileSync(targetPath, JSON.stringify(initialData, null, 2), 'utf-8');
+    } catch (e) {}
   }
 }
 
 function getData() {
   initDb();
-  const raw = fs.readFileSync(dbPath, 'utf-8');
-  const data = JSON.parse(raw);
-  if (!data.emailConfig) {
-    data.emailConfig = {
-      smtpHost: "smtp.ethereal.email",
-      smtpPort: 587,
-      smtpSecure: false,
-      smtpUser: "",
-      smtpPass: "",
-      defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
-      defaultAdminEmail: "cskelectronicservices@gmail.com"
-    };
-    fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
-  } else if (data.emailConfig.defaultAdminEmail) {
-    const adminUser = data.users.find(u => u.role === 'admin');
-    if (adminUser && adminUser.email.toLowerCase() !== data.emailConfig.defaultAdminEmail.toLowerCase()) {
-      adminUser.email = data.emailConfig.defaultAdminEmail;
-      fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+  const targetPath = getDbPath();
+  try {
+    const raw = fs.readFileSync(targetPath, 'utf-8');
+    const data = JSON.parse(raw);
+    if (!data.emailConfig) {
+      data.emailConfig = {
+        smtpHost: "smtp.ethereal.email",
+        smtpPort: 587,
+        smtpSecure: false,
+        smtpUser: "",
+        smtpPass: "",
+        defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
+        defaultAdminEmail: "cskelectronicservices@gmail.com"
+      };
+      saveData(data);
     }
+    return data;
+  } catch (err) {
+    return { emailConfig: {}, users: [], requests: [], invoices: [], auditLogs: [] };
   }
-  return data;
 }
 
 function saveData(data) {
-  fs.writeFileSync(dbPath, JSON.stringify(data, null, 2), 'utf-8');
+  const targetPath = getDbPath();
+  try {
+    fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('DB write warning (serverless environment):', e.message);
+  }
 }
 
 module.exports = {
