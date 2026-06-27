@@ -1,9 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const https = require('https');
 
 const localDbPath = path.join(__dirname, 'db.json');
-const syncScriptPath = path.join(__dirname, 'db_sync.js');
+const EXTENDSCLASS_BIN = 'https://extendsclass.com/api/json-storage/bin/cadceef';
+
+let cachedData = null;
+let dirty = false;
 
 function getDbPath() {
   if (process.env.VERCEL) {
@@ -92,60 +96,85 @@ function initDb() {
   }
 }
 
-// In-Memory Request Cache to limit API calls within the same HTTP request
-let localCache = null;
-let cacheTime = 0;
-const CACHE_DURATION_MS = 200; // 200ms TTL (covers multiple reads within a single HTTP request but expires before next request)
+// Async Cloud Sync Functions
+function pullLatest() {
+  return new Promise((resolve, reject) => {
+    https.get(EXTENDSCLASS_BIN, res => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          if (parsed && parsed.users) {
+            const targetPath = getDbPath();
+            fs.writeFileSync(targetPath, body, 'utf8');
+            cachedData = parsed;
+            dirty = false;
+            resolve(parsed);
+          } else {
+            reject(new Error('Invalid database format from cloud'));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }).on('error', err => {
+      reject(err);
+    });
+  });
+}
+
+function pushLatest() {
+  return new Promise((resolve, reject) => {
+    const targetPath = getDbPath();
+    let payload;
+    try {
+      payload = fs.readFileSync(targetPath, 'utf8');
+    } catch (e) {
+      return reject(e);
+    }
+
+    const req = https.request(EXTENDSCLASS_BIN, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }, res => {
+      res.on('data', () => {});
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          dirty = false;
+          resolve();
+        } else {
+          reject(new Error(`Failed to upload: status ${res.statusCode}`));
+        }
+      });
+    });
+    req.on('error', err => {
+      reject(err);
+    });
+    req.write(payload);
+    req.end();
+  });
+}
 
 function getData() {
-  const now = Date.now();
-  if (localCache && (now - cacheTime) < CACHE_DURATION_MS) {
-    return localCache;
+  if (cachedData) {
+    return cachedData;
   }
-
   initDb();
   const targetPath = getDbPath();
-
-  // Try to pull latest from ExtendsClass synchronously via db_sync.js
-  try {
-    const script = syncScriptPath.replace(/\\/g, '/');
-    const dbPath = targetPath.replace(/\\/g, '/');
-    const cmd = `node "${script}" pull "${dbPath}"`;
-
-    const { execSync } = require('child_process');
-    execSync(cmd, { stdio: 'pipe', timeout: 5000 });
-  } catch (err) {
-    console.error('Failed to pull from cloud database, using local cache:', err.message);
-    if (err.stderr) console.error('Pull Subprocess Stderr:', err.stderr.toString());
-  }
-
   try {
     const raw = fs.readFileSync(targetPath, 'utf-8');
     const data = JSON.parse(raw);
-
+    
     // Self-healing database structure
     if (!data.updates) data.updates = [];
     if (!data.requests) data.requests = [];
     if (!data.invoices) data.invoices = [];
     if (!data.estimates) data.estimates = [];
 
-    // Standard Gmail Default Email Credentials Configuration
-    if (!data.emailConfig || !data.emailConfig.smtpUser) {
-      data.emailConfig = {
-        smtpHost: "smtp.gmail.com",
-        smtpPort: 465,
-        smtpSecure: true,
-        smtpUser: "cskelectronicservices@gmail.com",
-        smtpPass: "nlgunutixumkpejc",
-        defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
-        defaultAdminEmail: "cskelectronicservices@gmail.com"
-      };
-      // Save synchronously
-      fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
-    }
-
-    localCache = data;
-    cacheTime = now;
+    cachedData = data;
     return data;
   } catch (err) {
     return { emailConfig: {}, users: [], requests: [], invoices: [], estimates: [], updates: [] };
@@ -153,30 +182,26 @@ function getData() {
 }
 
 function saveData(data) {
-  // Update in-memory cache instantly
-  localCache = data;
-  cacheTime = Date.now();
-
+  cachedData = data;
+  dirty = true;
   const targetPath = getDbPath();
   try {
-    // 1. Write to local file first
     fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
-
-    // 2. Upload to ExtendsClass synchronously via db_sync.js
-    const script = syncScriptPath.replace(/\\/g, '/');
-    const dbPath = targetPath.replace(/\\/g, '/');
-    const cmd = `node "${script}" push "${dbPath}"`;
-
-    const { execSync } = require('child_process');
-    execSync(cmd, { stdio: 'pipe', timeout: 6000 });
   } catch (e) {
-    console.error('DB write warning (serverless environment):', e.message);
-    if (e.stderr) console.error('Push Subprocess Stderr:', e.stderr.toString());
+    console.error('DB write warning (local write):', e.message);
   }
+}
+
+function isDirty() {
+  return dirty;
 }
 
 module.exports = {
   getData,
   saveData,
-  initDb
+  initDb,
+  pullLatest,
+  pushLatest,
+  isDirty,
+  getDbPath
 };

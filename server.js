@@ -47,6 +47,44 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Database Synchronization Middleware for Serverless Environment
+app.use(async (req, res, next) => {
+  // Only sync for API requests to keep static file serving fast
+  if (req.path.startsWith('/api')) {
+    try {
+      await db.pullLatest();
+    } catch (err) {
+      console.error('📧 [DB SYNC] Pull failed:', err.message);
+    }
+
+    // Override res.end to push dirty database before response is finalized
+    const originalEnd = res.end;
+    let pushDone = false;
+
+    res.end = function(chunk, encoding, callback) {
+      if (pushDone) {
+        return originalEnd.call(this, chunk, encoding, callback);
+      }
+      pushDone = true;
+
+      if (db.isDirty()) {
+        db.pushLatest()
+          .then(() => {
+            console.log('📧 [DB SYNC] Pushed database successfully.');
+            originalEnd.call(res, chunk, encoding, callback);
+          })
+          .catch(err => {
+            console.error('📧 [DB SYNC] Push failed:', err.message);
+            originalEnd.call(res, chunk, encoding, callback);
+          });
+      } else {
+        originalEnd.call(this, chunk, encoding, callback);
+      }
+    };
+  }
+  next();
+});
+
 // Server-Sent Events clients
 let sseClients = [];
 
