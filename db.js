@@ -3,9 +3,7 @@ const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const localDbPath = path.join(__dirname, 'db.json');
-
-// ExtendsClass Shared Bin URL
-const EXTENDSCLASS_BIN = 'https://extendsclass.com/api/json-storage/bin/cadceef';
+const syncScriptPath = path.join(__dirname, 'db_sync.js');
 
 function getDbPath() {
   if (process.env.VERCEL) {
@@ -108,23 +106,14 @@ function getData() {
   initDb();
   const targetPath = getDbPath();
 
-  // Try to pull latest from ExtendsClass synchronously via child process
+  // Try to pull latest from ExtendsClass synchronously via db_sync.js
   try {
-    const downloadPath = path.join(path.dirname(targetPath), 'downloaded_db.json');
-    const cmd = `node -e "const https = require('https'); const fs = require('fs'); https.get('${EXTENDSCLASS_BIN}', res => { let body = ''; res.on('data', chunk => body += chunk); res.on('end', () => { fs.writeFileSync('${downloadPath.replace(/\\/g, '\\\\')}', body, 'utf8'); process.exit(0); }); }).on('error', () => { process.exit(1); });"`;
+    const script = syncScriptPath.replace(/\\/g, '/');
+    const dbPath = targetPath.replace(/\\/g, '/');
+    const cmd = `node "${script}" pull "${dbPath}"`;
 
     const { execSync } = require('child_process');
     execSync(cmd, { stdio: 'ignore', timeout: 5000 });
-
-    if (fs.existsSync(downloadPath)) {
-      const raw = fs.readFileSync(downloadPath, 'utf-8');
-      const parsed = JSON.parse(raw);
-      // Verify data integrity before updating local file cache
-      if (parsed && parsed.users) {
-        fs.writeFileSync(targetPath, raw, 'utf-8');
-      }
-      try { fs.unlinkSync(downloadPath); } catch (e) {}
-    }
   } catch (err) {
     console.error('Failed to pull from cloud database, using local cache:', err.message);
   }
@@ -172,16 +161,13 @@ function saveData(data) {
     // 1. Write to local file first
     fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
 
-    // 2. Upload to ExtendsClass synchronously via child process
-    const payloadPath = path.join(path.dirname(targetPath), 'upload_payload.json');
-    fs.writeFileSync(payloadPath, JSON.stringify(data), 'utf-8');
-
-    const cmd = `node -e "const https = require('https'); const fs = require('fs'); const data = fs.readFileSync('${payloadPath.replace(/\\/g, '\\\\')}', 'utf8'); const req = https.request('${EXTENDSCLASS_BIN}', { method: 'PUT', headers: { 'Content-Type': 'application/json' } }, res => { res.on('data', () => {}); res.on('end', () => { process.exit(0); }); }); req.on('error', () => { process.exit(1); }); req.write(data); req.end();"`;
+    // 2. Upload to ExtendsClass synchronously via db_sync.js
+    const script = syncScriptPath.replace(/\\/g, '/');
+    const dbPath = targetPath.replace(/\\/g, '/');
+    const cmd = `node "${script}" push "${dbPath}"`;
 
     const { execSync } = require('child_process');
     execSync(cmd, { stdio: 'ignore', timeout: 6000 });
-
-    try { fs.unlinkSync(payloadPath); } catch (e) {}
   } catch (e) {
     console.error('DB write warning (serverless environment):', e.message);
   }
