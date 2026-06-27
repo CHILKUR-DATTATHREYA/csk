@@ -82,7 +82,8 @@ function initDb() {
       ],
       requests: [],
       invoices: [],
-      auditLogs: []
+      estimates: [],
+      updates: []
     };
     try {
       fs.writeFileSync(targetPath, JSON.stringify(initialData, null, 2), 'utf-8');
@@ -96,6 +97,13 @@ function getData() {
   try {
     const raw = fs.readFileSync(targetPath, 'utf-8');
     const data = JSON.parse(raw);
+    
+    // Self-healing database structure
+    if (!data.updates) data.updates = [];
+    if (!data.requests) data.requests = [];
+    if (!data.invoices) data.invoices = [];
+    if (!data.estimates) data.estimates = [];
+    
     if (!data.emailConfig) {
       data.emailConfig = {
         smtpHost: "smtp.ethereal.email",
@@ -110,7 +118,7 @@ function getData() {
     }
     return data;
   } catch (err) {
-    return { emailConfig: {}, users: [], requests: [], invoices: [], auditLogs: [] };
+    return { emailConfig: {}, users: [], requests: [], invoices: [], estimates: [], updates: [] };
   }
 }
 
