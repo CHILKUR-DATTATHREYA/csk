@@ -95,7 +95,7 @@ function initDb() {
 // In-Memory Request Cache to limit API calls within the same HTTP request
 let localCache = null;
 let cacheTime = 0;
-const CACHE_DURATION_MS = 2500; // 2.5 seconds cache TTL
+const CACHE_DURATION_MS = 200; // 200ms TTL (covers multiple reads within a single HTTP request but expires before next request)
 
 function getData() {
   const now = Date.now();
@@ -113,9 +113,10 @@ function getData() {
     const cmd = `node "${script}" pull "${dbPath}"`;
 
     const { execSync } = require('child_process');
-    execSync(cmd, { stdio: 'ignore', timeout: 5000 });
+    execSync(cmd, { stdio: 'pipe', timeout: 5000 });
   } catch (err) {
     console.error('Failed to pull from cloud database, using local cache:', err.message);
+    if (err.stderr) console.error('Pull Subprocess Stderr:', err.stderr.toString());
   }
 
   try {
@@ -167,9 +168,10 @@ function saveData(data) {
     const cmd = `node "${script}" push "${dbPath}"`;
 
     const { execSync } = require('child_process');
-    execSync(cmd, { stdio: 'ignore', timeout: 6000 });
+    execSync(cmd, { stdio: 'pipe', timeout: 6000 });
   } catch (e) {
     console.error('DB write warning (serverless environment):', e.message);
+    if (e.stderr) console.error('Push Subprocess Stderr:', e.stderr.toString());
   }
 }
 
