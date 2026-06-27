@@ -48,40 +48,36 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Database Synchronization Middleware for Serverless Environment
+// Strategy: pull fresh data BEFORE every API request, push changes BEFORE sending response.
+// The response is held (not sent) until the cloud push fully completes — this prevents
+// the race condition where the next request pulls stale cloud data before push is done.
 app.use(async (req, res, next) => {
-  // Only sync for API requests to keep static file serving fast
-  if (req.path.startsWith('/api')) {
-    try {
-      await db.pullLatest();
-    } catch (err) {
-      console.error('📧 [DB SYNC] Pull failed:', err.message);
-    }
+  if (!req.path.startsWith('/api')) return next();
 
-    // Override res.end to push dirty database before response is finalized
-    const originalEnd = res.end;
-    let pushDone = false;
-
-    res.end = function(chunk, encoding, callback) {
-      if (pushDone) {
-        return originalEnd.call(this, chunk, encoding, callback);
-      }
-      pushDone = true;
-
-      if (db.isDirty()) {
-        db.pushLatest()
-          .then(() => {
-            console.log('📧 [DB SYNC] Pushed database successfully.');
-            originalEnd.call(res, chunk, encoding, callback);
-          })
-          .catch(err => {
-            console.error('📧 [DB SYNC] Push failed:', err.message);
-            originalEnd.call(res, chunk, encoding, callback);
-          });
-      } else {
-        originalEnd.call(this, chunk, encoding, callback);
-      }
-    };
+  // Always pull latest from cloud before handling the request
+  try {
+    await db.pullLatest();
+  } catch (err) {
+    console.error('📧 [DB SYNC] Pull failed:', err.message);
   }
+
+  // Wrap res.json so we can push dirty data to cloud BEFORE the response bytes go out
+  const _json = res.json.bind(res);
+  res.json = async function(payload) {
+    if (db.isDirty()) {
+      try {
+        await db.pushLatest();
+        console.log('📧 [DB SYNC] Pushed to cloud successfully.');
+      } catch (err) {
+        console.error('📧 [DB SYNC] Push failed:', err.message);
+      }
+    }
+    // Now actually send the response
+    _json(payload);
+  };
+
+  // Also wrap res.status(...).json(...) pattern — handled by the above since
+  // res.status returns res and json is already patched.
   next();
 });
 
