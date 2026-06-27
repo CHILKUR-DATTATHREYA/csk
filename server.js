@@ -84,6 +84,11 @@ app.use(async (req, res, next) => {
 // Server-Sent Events clients
 let sseClients = [];
 
+// Version check endpoint to verify deployments
+app.get('/api/version', (req, res) => {
+  res.json({ version: "v2-clean-db" });
+});
+
 // SSE Registration Endpoint
 app.get('/api/notifications/sse', (req, res) => {
   res.writeHead(200, {
