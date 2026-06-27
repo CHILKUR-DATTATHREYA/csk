@@ -39,7 +39,7 @@ const JWT_SECRET = 'csk_super_secret_key_2026';
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Server-Sent Events clients
 let sseClients = [];
@@ -1484,8 +1484,19 @@ app.post('/api/invoice/:id/sign', authenticateToken, requireRole(['customer', 'a
   res.json({ message: 'Signature saved successfully', invoice });
 });
 
-// START SERVER
-app.listen(PORT, () => {
-  console.log(`🚀 CSK Electronics backend running on http://localhost:${PORT}`);
-  db.initDb();
+// Fallback catch-all route for Single Page Application
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Ensure DB initialized
+db.initDb();
+
+// START SERVER
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🚀 CSK Electronics backend running on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
