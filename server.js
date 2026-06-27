@@ -1404,14 +1404,14 @@ app.post('/api/requests/:id/close', authenticateToken, (req, res) => {
 });
 
 // CUSTOMER DIGITAL SIGNATURE ON INVOICE
-app.post('/api/invoice/:id/sign', authenticateToken, requireRole(['customer']), (req, res) => {
+app.post('/api/invoice/:id/sign', authenticateToken, requireRole(['customer', 'admin']), (req, res) => {
   const { signature } = req.body;
   if (!signature) return res.status(400).json({ error: 'Signature data is required' });
   
   const data = db.getData();
   const invoice = data.invoices.find(i => i.id === req.params.id);
   if (!invoice) return res.status(404).json({ error: 'Invoice not found' });
-  if (invoice.customerId !== req.user.id) return res.status(403).json({ error: 'Unauthorized' });
+  if (req.user.role !== 'admin' && invoice.customerId !== req.user.id) return res.status(403).json({ error: 'Unauthorized' });
   
   invoice.customerSignature = signature;  // base64 PNG data URL
   invoice.signedAt = new Date().toISOString();

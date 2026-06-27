@@ -265,7 +265,8 @@ async function apiCall(endpoint, method = 'GET', body = null, customToken = null
     const data = await response.json();
     
     if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
+      // Only auto-logout on 401 (expired/invalid token), not 403 (role/permission denied)
+      if (response.status === 401) {
         logout();
       }
       throw new Error(data.error || 'Something went wrong');
@@ -1364,7 +1365,7 @@ async function saveCustomerSignature() {
   const signatureDataUrl = signaturePadCanvas.toDataURL('image/png');
   
   try {
-    await apiCall(`/invoice/${currentSigningInvoiceId}/sign`, 'POST', { signature: signatureDataUrl });
+    await apiCall(`/invoice/${currentSigningInvoiceId}/sign`, 'POST', { signature: signatureDataUrl }, null, true);
     showToast("Invoice signed successfully!", "success");
     closeModal('modal-signature-pad');
     
