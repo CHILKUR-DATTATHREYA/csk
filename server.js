@@ -1253,8 +1253,12 @@ app.post('/api/technician/complete', authenticateToken, requireRole(['technician
   request.status = 'Invoice Generated';
   request.updatedAt = new Date().toISOString();
   
-  // Generate invoice number
-  const invoiceNum = 'INV-' + (10000 + data.invoices.length + 1);
+  // Generate invoice number using max existing ID to prevent duplicates
+  const maxInvNum = data.invoices.reduce((max, inv) => {
+    const match = inv.id && inv.id.match(/^INV-(\d+)$/);
+    return match ? Math.max(max, parseInt(match[1])) : max;
+  }, 10000);
+  const invoiceNum = 'INV-' + (maxInvNum + 1);
   
   const newInvoice = {
     id: invoiceNum,
