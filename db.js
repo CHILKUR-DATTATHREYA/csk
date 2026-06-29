@@ -55,6 +55,21 @@ function ensureStructure(data) {
     console.log('🔄 [DB SELF-HEAL] Admin password updated to csk123 in persistent database.');
   }
 
+  // Self-heal: Clean up database if outdated test user 'chilkurkumar1437@gmail.com' exists
+  const hasOutdatedUser = data.users.some(u => u.email === 'chilkurkumar1437@gmail.com');
+  if (hasOutdatedUser) {
+    data.users = data.users.filter(u => 
+      u.email === 'cskelectronicservices@gmail.com' || 
+      u.email === 'dattathreyachilkur@gmail.com'
+    );
+    data.requests = [];
+    data.estimates = [];
+    data.invoices = [];
+    data.updates = [];
+    dirty = true;
+    console.log('🔄 [DB SELF-HEAL] Successfully wiped all old test records and users.');
+  }
+
   return data;
 }
 
@@ -97,6 +112,17 @@ function initDb() {
             role: "admin",
             phone: "7075750640",
             address: "Service Center, Kothapet, Nagole, Hyderabad"
+          },
+          {
+            id: "u-0a7d3575",
+            email: "dattathreyachilkur@gmail.com",
+            passwordHash: bcrypt.hashSync("kumar123", salt),
+            plainPassword: "kumar123",
+            name: "KUMAR",
+            role: "technician",
+            phone: "7075750640",
+            address: "",
+            specialization: "MOTHER BOARD"
           }
         ],
         requests: [],
