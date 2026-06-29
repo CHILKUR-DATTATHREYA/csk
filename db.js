@@ -1,43 +1,42 @@
 /**
- * db.js — Cloud-backed in-memory database
- *
- * Single source of truth: ExtendsClass JSON bin (cadceef)
- * On every API request:  pull() → modify in memory → push() before responding
- * No disk reads/writes on Vercel (read-only filesystem).
+ * db.js — Database storage module
+ * 
+ * Supports local development and persistent deployment environments (e.g. Railway).
+ * If the environment variable PERSISTENT_DIR is set, the database file
+ * will be stored and persisted in that directory (e.g. /data).
  */
 
 'use strict';
 
-const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
-const BIN_URL = 'https://extendsclass.com/api/json-storage/bin/cadceef';
-const TIMEOUT_MS = 9000;
+// In-memory cache
+let mem = null;
+let dirty = false;
 
-// In-memory state (per serverless invocation)
-let mem = null;   // current database object
-let dirty = false; // true when mem has unsaved changes
-
-// ─── HTTP helpers ─────────────────────────────────────────────────────────────
-
-function httpsRequest(url, options, body) {
-  return new Promise((resolve, reject) => {
-    const req = https.request(url, options, res => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => resolve({ status: res.statusCode, body: data }));
-    });
-    req.on('error', reject);
-    req.setTimeout(TIMEOUT_MS, () => { req.destroy(); reject(new Error('HTTP timeout')); });
-    if (body) req.write(body);
-    req.end();
-  });
+/**
+ * Resolves the absolute path to the database file.
+ */
+function getDbPath() {
+  const dir = process.env.PERSISTENT_DIR || __dirname;
+  // If a custom directory is specified, ensure it exists
+  if (dir !== __dirname && !fs.existsSync(dir)) {
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch (e) {
+      console.error('Error creating directory for persistent database:', e.message);
+    }
+  }
+  return path.join(dir, 'db.json');
 }
 
-// ─── Self-heal: ensure all required keys exist ────────────────────────────────
-
+/**
+ * Self-heal: ensure all required keys exist in the database structure.
+ */
 function ensureStructure(data) {
   if (!data || typeof data !== 'object') return null;
-  if (!Array.isArray(data.users)) return null;  // invalid
+  if (!Array.isArray(data.users)) return null;
   if (!data.emailConfig) data.emailConfig = {};
   if (!Array.isArray(data.requests))  data.requests  = [];
   if (!Array.isArray(data.invoices))  data.invoices  = [];
@@ -47,71 +46,111 @@ function ensureStructure(data) {
   return data;
 }
 
-// ─── Cloud operations ─────────────────────────────────────────────────────────
+/**
+ * Initializes the database on persistent disk if not present,
+ * seeding it from the template db.json file in the application bundle.
+ */
+function initDb() {
+  const targetPath = getDbPath();
+  if (!fs.existsSync(targetPath)) {
+    const srcPath = path.join(__dirname, 'db.json');
+    if (fs.existsSync(srcPath)) {
+      try {
+        fs.copyFileSync(srcPath, targetPath);
+        console.log('✅ Initialized persistent db.json from bundle template at:', targetPath);
+      } catch (e) {
+        console.error('Error seeding persistent db.json:', e.message);
+      }
+    } else {
+      // Create empty DB template if source doesn't exist
+      const bcrypt = require('bcryptjs');
+      const salt = bcrypt.genSaltSync(10);
+      const initialData = {
+        emailConfig: {
+          smtpHost: "smtp.gmail.com",
+          smtpPort: 465,
+          smtpSecure: true,
+          smtpUser: "cskelectronicservices@gmail.com",
+          smtpPass: "nlgunutixumkpejc",
+          defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
+          defaultAdminEmail: "cskelectronicservices@gmail.com"
+        },
+        users: [
+          {
+            id: "u-admin",
+            email: "cskelectronicservices@gmail.com",
+            passwordHash: bcrypt.hashSync("admin123", salt),
+            name: "TINKU",
+            role: "admin",
+            phone: "7075750640",
+            address: "Service Center, Kothapet, Nagole, Hyderabad"
+          }
+        ],
+        requests: [],
+        invoices: [],
+        estimates: [],
+        updates: [],
+        auditLogs: []
+      };
+      try {
+        fs.writeFileSync(targetPath, JSON.stringify(initialData, null, 2), 'utf-8');
+        console.log('✅ Created fresh fallback db.json at:', targetPath);
+      } catch (e) {
+        console.error('Error writing fallback db.json:', e.message);
+      }
+    }
+  }
+}
 
 /**
- * Pull latest data from cloud into memory.
- * Always fetches fresh — never uses local disk on Vercel.
+ * Pulls the latest database from disk.
+ * Fast, file-based operation replacing slow serverless cloud synchronization.
  */
 async function pullLatest() {
-  const result = await httpsRequest(BIN_URL, {
-    method: 'GET',
-    headers: { 'Accept': 'application/json' }
-  });
-
-  let parsed;
+  initDb();
+  const targetPath = getDbPath();
   try {
-    parsed = JSON.parse(result.body);
-  } catch (e) {
-    throw new Error(`Cloud returned invalid JSON (status ${result.status}): ${result.body.substring(0, 100)}`);
+    const raw = fs.readFileSync(targetPath, 'utf8');
+    const parsed = JSON.parse(raw);
+    const valid = ensureStructure(parsed);
+    if (valid) {
+      mem = valid;
+      dirty = false;
+    }
+  } catch (err) {
+    console.error('Error loading database file:', err.message);
   }
-
-  const valid = ensureStructure(parsed);
-  if (!valid) throw new Error('Cloud data missing required "users" array');
-
-  mem = valid;
-  dirty = false;
   return mem;
 }
 
 /**
- * Push current in-memory state to cloud.
- * Awaited by res.json middleware BEFORE the HTTP response is sent.
+ * Pushes in-memory cache changes to disk.
+ * Fast, file-based operation.
  */
 async function pushLatest() {
-  if (!mem) throw new Error('Nothing to push — mem is null');
-
-  const payload = JSON.stringify(mem);
-  const result = await httpsRequest(BIN_URL, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(payload)
+  if (mem && dirty) {
+    const targetPath = getDbPath();
+    try {
+      fs.writeFileSync(targetPath, JSON.stringify(mem, null, 2), 'utf8');
+      dirty = false;
+    } catch (err) {
+      console.error('Error writing database to disk:', err.message);
     }
-  }, payload);
-
-  if (result.status !== 200) {
-    throw new Error(`Cloud push failed: HTTP ${result.status} — ${result.body.substring(0, 200)}`);
   }
-
-  dirty = false;
+  return mem;
 }
 
-// ─── Public API ───────────────────────────────────────────────────────────────
-
 /**
- * Return the current in-memory database.
- * Middleware guarantees pullLatest() is called before every API route.
+ * Gets the current in-memory database.
  */
 function getData() {
   if (!mem) {
-    // Fallback: load from local db.json (local dev only)
+    initDb();
+    const targetPath = getDbPath();
     try {
-      const fs = require('fs');
-      const path = require('path');
-      const raw = fs.readFileSync(path.join(__dirname, 'db.json'), 'utf8');
-      mem = ensureStructure(JSON.parse(raw)) || { emailConfig: {}, users: [], requests: [], invoices: [], estimates: [], updates: [], auditLogs: [] };
-    } catch {
+      const raw = fs.readFileSync(targetPath, 'utf8');
+      mem = ensureStructure(JSON.parse(raw));
+    } catch (err) {
       mem = { emailConfig: {}, users: [], requests: [], invoices: [], estimates: [], updates: [], auditLogs: [] };
     }
   }
@@ -119,21 +158,29 @@ function getData() {
 }
 
 /**
- * Write data to in-memory state and mark as dirty (needs cloud push).
- * Also persists to local disk for local development.
+ * Updates the database cache and immediately writes to disk.
  */
 function saveData(data) {
   mem = ensureStructure(data) || data;
   dirty = true;
-
-  // Local disk write (for dev convenience — NOT used for cloud sync)
+  const targetPath = getDbPath();
   try {
-    const fs = require('fs');
-    const path = require('path');
-    fs.writeFileSync(path.join(__dirname, 'db.json'), JSON.stringify(mem, null, 2), 'utf8');
-  } catch { /* non-fatal */ }
+    fs.writeFileSync(targetPath, JSON.stringify(mem, null, 2), 'utf8');
+    dirty = false;
+  } catch (err) {
+    console.error('Error writing database to disk:', err.message);
+  }
 }
 
-function isDirty() { return dirty; }
+function isDirty() {
+  return dirty;
+}
 
-module.exports = { getData, saveData, pullLatest, pushLatest, isDirty };
+module.exports = {
+  getData,
+  saveData,
+  pullLatest,
+  pushLatest,
+  isDirty,
+  getDbPath
+};

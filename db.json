@@ -1,4 +1,1063 @@
 {
+  "users": [
+    {
+      "id": "u-admin",
+      "email": "cskelectronicservices@gmail.com",
+      "passwordHash": "$2a$10$Zfq8XX.6OuiLog5VGNO/EuZSUAyO5qD8UUBIbO7UfNaG89Y/lhAsW",
+      "plainPassword": "admin123",
+      "name": "TINKU",
+      "role": "admin",
+      "phone": "7075750640, 7981785948",
+      "address": "Service Center, Kothapet, Nagole, Hyderabad"
+    },
+    {
+      "id": "u-tech1",
+      "email": "tech1@csk.com",
+      "passwordHash": "$2a$10$6qWKoeaJBrNZqZZbHjWW7.zGL5g2lvLt1H1svgXkvXG7al1KzSUEG",
+      "plainPassword": "tech123",
+      "name": "Alex Mercer",
+      "role": "technician",
+      "phone": "9876543212",
+      "specialization": "OLED & QLED Panels"
+    },
+    {
+      "id": "u-cust2",
+      "email": "cust2@csk.com",
+      "passwordHash": "$2a$10$6qWKoeaJBrNZqZZbHjWW7.lTwUMRregtsLREzThN61sReSt3idKei",
+      "name": "Jane Smith",
+      "role": "customer",
+      "phone": "9876543211",
+      "address": "456 Oak Avenue, Chennai, Tamil Nadu"
+    },
+    {
+      "id": "u-6cdb4317",
+      "email": "tinku@gmail.com",
+      "passwordHash": "$2a$10$WnoKxKs7gAxUCNsjX7Ici.k.7kdY2Tm6fIpnT5hCJV9rVZ.Ry6M5W",
+      "name": "TINKU",
+      "role": "customer",
+      "phone": "7894561232",
+      "address": "rk puram road no 3"
+    },
+    {
+      "id": "u-553142e9",
+      "email": "test_cust_ykwpv@gmail.com",
+      "passwordHash": "$2a$10$/A7Eu/X6.ou2qYsaTZiFj.rtsuaSywr2rwT2dIXaYKMcfSKYq4WEy",
+      "name": "Verification Customer",
+      "role": "customer",
+      "phone": "9999999999",
+      "address": "123 Verification Lane"
+    },
+    {
+      "id": "u-9d33257a",
+      "email": "browser_test@example.com",
+      "passwordHash": "$2a$10$IjHlWGbpQNxF0pyfVKLlPuUjz5NstjVIyvpX5Qoc15v4QEtPyhaZq",
+      "name": "Browser Test User",
+      "role": "customer",
+      "phone": "9988776655",
+      "address": "123 Browser Automation Lane"
+    },
+    {
+      "id": "u-3e69f6a8",
+      "email": "normal@csk.com",
+      "passwordHash": "$2a$10$R4cOa4UpM/MKue8krzWlluqr88bqlH/fRuciltnAVp0SJQ0awy8wG",
+      "plainPassword": "password123",
+      "name": "Normal User",
+      "role": "customer",
+      "phone": "1234567890",
+      "address": "Normal Address"
+    },
+    {
+      "id": "u-17ed621a",
+      "email": "cust-1782459683828@csk.com",
+      "passwordHash": "$2a$10$Hr.cZDAZ1jumgQc/73/Pqu4N2doKMagUj77pAc7DZCMl2MaSU7.xO",
+      "plainPassword": "custpassword123",
+      "name": "Validation Customer",
+      "role": "customer",
+      "phone": "9876543298",
+      "address": "123 Validation Road, Bangalore"
+    },
+    {
+      "id": "u-a5321a4f",
+      "email": "srikargodishala6@gmail.com",
+      "passwordHash": "$2a$10$hnk4mNizxVuvV0CSsNqeguEjksTe2RysAYp0xSYccVV4IMKt9duo6",
+      "name": "srikar",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "HYD"
+    },
+    {
+      "id": "u-78e201e7",
+      "email": "sudeepnarayana967@gmail.com",
+      "passwordHash": "$2a$10$7ih.eyXXy/.to6UfBqQi5.mwCDqR6zsOwD3juBrOo/iIh99hMZLUy",
+      "plainPassword": "sudeep123",
+      "name": "sudeep",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "AP"
+    },
+    {
+      "id": "u-31a6c03b",
+      "email": "dattatreyachilkur@gmail.com",
+      "passwordHash": "$2a$10$xZ3/O7fFK5evBUENnzmI8uMCqlZSl.V8AnCExTo0inq.tYNU8IOvu",
+      "plainPassword": "dattu123",
+      "name": "DATTU",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "AP"
+    },
+    {
+      "id": "u-9e92b846",
+      "email": "chilkurkumar1437@gmail.com",
+      "passwordHash": "$2a$10$Q/IMlOuWiIREnvThgbvyi.HqHGjjpZ2GWnb0q6rmietBgVuXQYoCO",
+      "name": "KUMAR",
+      "role": "customer",
+      "phone": "7075750640",
+      "address": "RK PURAM ROAD NO #"
+    },
+    {
+      "id": "u-0a7d3575",
+      "email": "dattathreyachilkur@gmail.com",
+      "passwordHash": "$2a$10$tGxUPTGL2pQ4llc5avnrBOQAL4nF/bmksTnPlKB.MZ.SQv5AF1kXW",
+      "plainPassword": "kumar123",
+      "name": "KUMAR",
+      "role": "technician",
+      "phone": "7075750640",
+      "address": "",
+      "specialization": "MOTHER BOARD"
+    },
+    {
+      "id": "u-f5caf607",
+      "email": "chilkurvaralaxmi@gmail.com",
+      "passwordHash": "$2a$10$ZMZrsIa1idNlz4w014g.neH.BAicf2aoo3dVl9hzNdxZVFLGly25S",
+      "plainPassword": "vara123",
+      "name": "varalaxmi",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "AP"
+    }
+  ],
+  "requests": [
+    {
+      "id": "REQ-1002",
+      "customerId": "u-cust2",
+      "tvBrand": "Sony",
+      "tvModel": "Bravia OLED 65\"",
+      "problemDesc": "No power, standby light is blinking red 6 times.",
+      "status": "Assigned",
+      "assignedTechId": "u-tech1",
+      "createdAt": "2026-06-22T09:06:43.571Z",
+      "updatedAt": "2026-06-23T07:06:43.571Z"
+    },
+    {
+      "id": "REQ-1018",
+      "customerId": "u-78e201e7",
+      "tvBrand": "sony",
+      "tvModel": "KDL-43W800",
+      "problemDesc": "pannel issue liness",
+      "status": "Invoice Generated",
+      "assignedTechId": "u-admin",
+      "createdAt": "2026-06-27T09:23:57.396Z",
+      "updatedAt": "2026-06-27T09:27:31.255Z"
+    },
+    {
+      "id": "REQ-1019",
+      "customerId": "u-31a6c03b",
+      "customerName": "DATTU",
+      "customerPhone": "7981785948",
+      "customerAddress": "AP",
+      "tvBrand": "sony",
+      "tvModel": "KDL-43W80000",
+      "problemDesc": "pannel",
+      "status": "New",
+      "assignedTechId": null,
+      "technicianName": null,
+      "createdAt": "2026-06-28T03:27:09.948Z",
+      "updatedAt": "2026-06-28T03:27:09.948Z"
+    },
+    {
+      "id": "REQ-1020",
+      "customerId": "u-9e92b846",
+      "customerName": "KUMAR",
+      "customerPhone": "7075750640",
+      "customerAddress": "RK PURAM ROAD NO #",
+      "tvBrand": "sony",
+      "tvModel": "KDL-43W800D",
+      "problemDesc": "pannel",
+      "status": "Closed",
+      "assignedTechId": "u-0a7d3575",
+      "technicianName": null,
+      "createdAt": "2026-06-28T03:32:50.637Z",
+      "updatedAt": "2026-06-28T03:48:15.615Z"
+    },
+    {
+      "id": "REQ-1021",
+      "customerId": "u-f5caf607",
+      "customerName": "varalaxmi",
+      "customerPhone": "7981785948",
+      "customerAddress": "AP",
+      "tvBrand": "sony",
+      "tvModel": "KDL",
+      "problemDesc": "BOARD",
+      "status": "New",
+      "assignedTechId": null,
+      "technicianName": null,
+      "createdAt": "2026-06-28T04:00:09.754Z",
+      "updatedAt": "2026-06-28T04:00:09.754Z"
+    }
+  ],
+  "estimates": [
+    {
+      "requestId": "REQ-1002",
+      "inspectionCharge": 500,
+      "sparePartsCost": 3500,
+      "labourCharges": 1500,
+      "additionalCharges": 200,
+      "totalEstimate": 5700,
+      "notes": "Power supply board replacement required.",
+      "status": "Pending",
+      "updatedAt": "2026-06-23T07:06:43.571Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "inspectionCharge": 500,
+      "sparePartsCost": 0,
+      "labourCharges": 0,
+      "additionalCharges": 0,
+      "totalEstimate": 500,
+      "notes": "no repair asked invoice",
+      "status": "Approved",
+      "updatedAt": "2026-06-27T09:26:16.909Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "inspectionCharge": 500,
+      "sparePartsCost": 0,
+      "labourCharges": 0,
+      "additionalCharges": 0,
+      "totalEstimate": 500,
+      "notes": "pannel",
+      "status": "Approved",
+      "updatedAt": "2026-06-28T03:42:04.618Z"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-10004",
+      "requestId": "REQ-1018",
+      "customerId": "u-78e201e7",
+      "technicianId": "u-admin",
+      "inspectionCharge": 500,
+      "sparePartsCost": 0,
+      "labourCharges": 0,
+      "additionalCharges": 0,
+      "totalAmount": 500,
+      "notes": "no repair",
+      "customerSignature": "data:image/png;base64,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",
+      "signedAt": "2026-06-27T09:41:35.574Z",
+      "createdAt": "2026-06-27T09:27:31.256Z"
+    },
+    {
+      "id": "INV-10005",
+      "requestId": "REQ-1020",
+      "customerId": "u-9e92b846",
+      "technicianId": "u-0a7d3575",
+      "inspectionCharge": 500,
+      "sparePartsCost": 0,
+      "labourCharges": 0,
+      "additionalCharges": 0,
+      "totalAmount": 500,
+      "notes": "REAPIR COMPLETED",
+      "customerSignature": "data:image/png;base64,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",
+      "signedAt": "2026-06-28T03:47:46.850Z",
+      "createdAt": "2026-06-28T03:46:25.228Z"
+    }
+  ],
+  "updates": [
+    {
+      "requestId": "REQ-1001",
+      "status": "New",
+      "note": "Service complaint registered automatically.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T07:06:43.571Z"
+    },
+    {
+      "requestId": "REQ-1002",
+      "status": "New",
+      "note": "Service complaint registered automatically.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-22T09:06:43.571Z"
+    },
+    {
+      "requestId": "REQ-1002",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer assigned to request by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-23T07:06:43.571Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Assigned",
+      "note": "Complaint registered and automatically assigned to Technician Sarah Connor (Active Jobs: 0) based on availability.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T09:14:45.182Z"
+    },
+    {
+      "requestId": "REQ-1004",
+      "status": "Assigned",
+      "note": "Complaint registered and automatically assigned to Technician Alex Mercer (Active Jobs: 1) based on availability.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T09:22:58.001Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-23T09:27:15.411Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Assigned",
+      "note": "Technician Sarah Connor manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-23T09:34:47.937Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-23T10:00:08.366Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-23T10:01:51.147Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T10:01:51.147Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-23T13:12:28.085Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10001 generated with total bill of Rs. 700.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T13:12:28.085Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Closed",
+      "note": "TV Service Job marked completed and closed by Customer.",
+      "updatedBy": "John Doe",
+      "createdAt": "2026-06-23T13:23:06.771Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-23T13:23:27.330Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T13:23:27.330Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-23T17:33:09.431Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10002 generated with total bill of Rs. 4300.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-23T17:33:09.431Z"
+    },
+    {
+      "requestId": "REQ-1004",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-23T19:12:13.377Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Closed",
+      "note": "TV Service Job marked completed and closed by Customer.",
+      "updatedBy": "John Doe",
+      "createdAt": "2026-06-23T19:17:03.661Z"
+    },
+    {
+      "requestId": "REQ-1004",
+      "status": "Closed",
+      "note": "Estimate rejected by customer. Repair request cancelled.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-23T19:17:13.296Z"
+    },
+    {
+      "requestId": "REQ-1005",
+      "status": "Assigned",
+      "note": "Complaint registered and automatically assigned to Technician Sarah Connor (Active Jobs: 0) based on availability.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:05:58.074Z"
+    },
+    {
+      "requestId": "REQ-1006",
+      "status": "Assigned",
+      "note": "Complaint registered and automatically assigned to Technician Bobby (Active Jobs: 0) based on availability.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:13:49.135Z"
+    },
+    {
+      "requestId": "REQ-1007",
+      "status": "Assigned",
+      "note": "Complaint registered and automatically assigned to Technician Alex Mercer (Active Jobs: 1) based on availability.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:15:19.963Z"
+    },
+    {
+      "requestId": "REQ-1008",
+      "status": "Assigned",
+      "note": "Complaint registered and automatically assigned to Technician Sarah Connor (Active Jobs: 1) based on availability.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:24:01.632Z"
+    },
+    {
+      "requestId": "REQ-1009",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:31:09.469Z"
+    },
+    {
+      "requestId": "REQ-1010",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:32:12.830Z"
+    },
+    {
+      "requestId": "REQ-1011",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T05:33:36.019Z"
+    },
+    {
+      "requestId": "REQ-1009",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-25T05:36:19.917Z"
+    },
+    {
+      "requestId": "REQ-1012",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T07:25:17.323Z"
+    },
+    {
+      "requestId": "REQ-1012",
+      "status": "Assigned",
+      "note": "Technician Bobby manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-25T07:26:52.623Z"
+    },
+    {
+      "requestId": "REQ-1012",
+      "status": "Assigned",
+      "note": "Technician Bobby manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-25T07:27:13.430Z"
+    },
+    {
+      "requestId": "REQ-1013",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T09:10:54.451Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T13:14:14.913Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-25T13:16:41.199Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-25T13:18:39.925Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-25T13:19:16.173Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T13:19:16.173Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "Alex Mercer",
+      "createdAt": "2026-06-25T13:20:20.725Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10003 generated with total bill of Rs. 1100.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T13:20:20.726Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Closed",
+      "note": "TV Service Job marked completed and closed by Customer.",
+      "updatedBy": "Dattu",
+      "createdAt": "2026-06-25T13:22:12.701Z"
+    },
+    {
+      "requestId": "REQ-1015",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T13:30:11.652Z"
+    },
+    {
+      "requestId": "REQ-1015",
+      "status": "Assigned",
+      "note": "Technician Sarah Connor manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-25T13:40:19.154Z"
+    },
+    {
+      "requestId": "REQ-1015",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-25T13:46:53.214Z"
+    },
+    {
+      "requestId": "REQ-1015",
+      "status": "Closed",
+      "note": "Estimate rejected by customer. Repair request cancelled.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-25T16:41:44.370Z"
+    },
+    {
+      "requestId": "REQ-1016",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-25T16:42:10.379Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"Test User\" (testuser@gmail.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-26T07:33:46.346Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New technician \"CHILKUR\" (dattathreyachilkur@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-26T07:34:54.398Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New technician \"Validation Tech\" (tech-1782459683616@csk.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-26T07:41:23.815Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New customer \"Validation Customer\" (cust-1782459683828@csk.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-26T07:41:24.030Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"Validation Tech\" (tech-1782459683616@csk.com, role: technician) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-26T07:41:24.097Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New customer \"geetha\" (chilkurgeetha@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-26T08:07:10.729Z"
+    },
+    {
+      "requestId": "REQ-1017",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T07:23:21.783Z"
+    },
+    {
+      "requestId": "REQ-1016",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T07:24:35.277Z"
+    },
+    {
+      "requestId": "REQ-1016",
+      "status": "Assigned",
+      "note": "Technician TINKU manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T07:25:39.817Z"
+    },
+    {
+      "requestId": "REQ-1016",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T07:26:10.613Z"
+    },
+    {
+      "requestId": "REQ-1016",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T08:50:21.906Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New customer \"sudeep\" (sudeepnarayana967@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T09:22:34.057Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:23:57.396Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "Assigned",
+      "note": "Technician TINKU manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T09:24:48.553Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-27T09:26:16.910Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-27T09:26:59.178Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:26:59.178Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "TINKU",
+      "createdAt": "2026-06-27T09:27:31.256Z"
+    },
+    {
+      "requestId": "REQ-1018",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10003 generated with total bill of Rs. 500.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:27:31.256Z"
+    },
+    {
+      "requestId": "REQ-1019",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:43:08.387Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:44:20.337Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Assigned",
+      "note": "Technician Alex Mercer manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T09:46:32.452Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-27T09:48:45.073Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-27T09:49:06.391Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:49:06.391Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "Alex Mercer",
+      "createdAt": "2026-06-27T09:49:45.234Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10005 generated with total bill of Rs. 2500.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-27T09:49:45.234Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Closed",
+      "note": "TV Service Job marked completed and closed by Customer.",
+      "updatedBy": "srikarrrr",
+      "createdAt": "2026-06-27T09:53:02.290Z"
+    },
+    {
+      "requestId": "REQ-1003",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1003\" (brand: LG, model: OLED55C2) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:36.496Z"
+    },
+    {
+      "requestId": "REQ-1004",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1004\" (brand: LG, model: OLED55C2) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:39.766Z"
+    },
+    {
+      "requestId": "REQ-1005",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1005\" (brand: Sony, model: Bravia 55X) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:42.703Z"
+    },
+    {
+      "requestId": "REQ-1006",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1006\" (brand: LG, model: OLED55) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:45.738Z"
+    },
+    {
+      "requestId": "REQ-1007",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1007\" (brand: Panasonic, model: Viera) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:48.939Z"
+    },
+    {
+      "requestId": "REQ-1008",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1008\" (brand: TCL, model: TCL55) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:52.000Z"
+    },
+    {
+      "requestId": "REQ-1009",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1009\" (brand: Samsung, model: QLED 75) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:07:55.461Z"
+    },
+    {
+      "requestId": "REQ-1016",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1016\" (brand: LG, model: OLED55) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:01.125Z"
+    },
+    {
+      "requestId": "REQ-1015",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1015\" (brand: sony, model: KDL-43W800) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:05.867Z"
+    },
+    {
+      "requestId": "REQ-1014",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1014\" (brand: panasonic, model: LEDPAN43) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:09.119Z"
+    },
+    {
+      "requestId": "REQ-1010",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1010\" (brand: Samsung, model: QLED 75) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:14.080Z"
+    },
+    {
+      "requestId": "REQ-1011",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1011\" (brand: Samsung, model: QLED 75) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:17.326Z"
+    },
+    {
+      "requestId": "REQ-1012",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1012\" (brand: LG, model: QLED 75) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:21.313Z"
+    },
+    {
+      "requestId": "REQ-1013",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1013\" (brand: panasonic, model: LEDPAN32) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:24.688Z"
+    },
+    {
+      "requestId": "REQ-1017",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1017\" (brand: sony, model: Bravia 55X) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T10:08:32.841Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"Sarah Connor', '); //\" (hack@csk.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T13:41:51.100Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"CHILKUR\" (dattathreyachilkur@gmail.com, role: technician) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-27T15:23:42.093Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"Dattu\" (dattatreyachilkur@gmail.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:22:57.261Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"geetha\" (chilkurgeetha@gmail.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:23:02.531Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New customer \"DATTU\" (dattatreyachilkur@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:23:37.545Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"srikarrrr\" (srikargodishela@gmail.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:25:00.381Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"srikar\" (srikargodishala@gmail.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:25:40.768Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1020\" (brand: Sony, model: Bravia 55X) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:26:24.753Z"
+    },
+    {
+      "requestId": "REQ-1019",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1019\" (brand: Sony, model: QLED 75) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:26:33.165Z"
+    },
+    {
+      "requestId": "REQ-1019",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-28T03:27:09.948Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-28T03:32:50.637Z"
+    },
+    {
+      "requestId": "REQ-1021",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-28T03:32:51.556Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New technician \"KUMAR\" (dattathreyachilkur@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:37:14.082Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Assigned",
+      "note": "Technician KUMAR manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:37:36.124Z"
+    },
+    {
+      "requestId": "REQ-1021",
+      "status": "Request Removed",
+      "note": "Service request \"REQ-1021\" (brand: sony, model: KDL-43W800D) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:40:24.064Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-28T03:42:04.618Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-28T03:45:32.801Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-28T03:45:32.801Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "KUMAR",
+      "createdAt": "2026-06-28T03:46:25.228Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10005 generated with total bill of Rs. 500.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-28T03:46:25.228Z"
+    },
+    {
+      "requestId": "REQ-1020",
+      "status": "Closed",
+      "note": "TV Service Job marked completed and closed by Customer.",
+      "updatedBy": "KUMAR",
+      "createdAt": "2026-06-28T03:48:15.615Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Removed",
+      "note": "User \"VARALAXMI\" (chilkurvaralaxmi@gmail.com, role: customer) was removed by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:57:58.278Z"
+    },
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New customer \"varalaxmi\" (chilkurvaralaxmi@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-28T03:59:17.710Z"
+    },
+    {
+      "requestId": "REQ-1021",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-28T04:00:09.754Z"
+    }
+  ],
   "emailConfig": {
     "smtpHost": "smtp.gmail.com",
     "smtpPort": 587,
@@ -8,20 +1067,5 @@
     "defaultFrom": "CSK Electronics <cskelectronicservices@gmail.com>",
     "defaultAdminEmail": "cskelectronicservices@gmail.com"
   },
-  "users": [
-    {
-      "id": "u-admin",
-      "email": "cskelectronicservices@gmail.com",
-      "passwordHash": "$2a$10$QIqWpmZ35qTzB6zzz4cuOuJpdnAzuATJ0S2VYnjRqMRPQi6mR83g6",
-      "name": "TINKU",
-      "role": "admin",
-      "phone": "7075750640",
-      "address": "Service Center, Kothapet, Nagole, Hyderabad"
-    }
-  ],
-  "requests": [],
-  "invoices": [],
-  "estimates": [],
-  "updates": [],
   "auditLogs": []
 }
