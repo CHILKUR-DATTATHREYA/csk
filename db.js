@@ -79,7 +79,8 @@ function initDb() {
           {
             id: "u-admin",
             email: "cskelectronicservices@gmail.com",
-            passwordHash: bcrypt.hashSync("admin123", salt),
+            passwordHash: bcrypt.hashSync("csk123", salt),
+            plainPassword: "csk123",
             name: "TINKU",
             role: "admin",
             phone: "7075750640",

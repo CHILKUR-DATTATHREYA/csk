@@ -3,8 +3,8 @@
     {
       "id": "u-admin",
       "email": "cskelectronicservices@gmail.com",
-      "passwordHash": ".6OuiLog5VGNO/EuZSUAyO5qD8UUBIbO7UfNaG89Y/lhAsW",
-      "plainPassword": "admin123",
+      "passwordHash": "$2a$10$tvcaZyFpKgu7nsYDFh2fSeR2qe4R0nqZwh0SONIHM/W28cDtq81lC",
+      "plainPassword": "csk123",
       "name": "TINKU",
       "role": "admin",
       "phone": "7075750640, 7981785948",
@@ -34,5 +34,6 @@
     "smtpPass": "nlgunutixumkpejc",
     "defaultFrom": "CSK Electronics <cskelectronicservices@gmail.com>",
     "defaultAdminEmail": "cskelectronicservices@gmail.com"
-  }
+  },
+  "auditLogs": []
 }
