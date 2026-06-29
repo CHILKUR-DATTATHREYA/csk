@@ -39,8 +39,10 @@ const JWT_SECRET = 'csk_super_secret_key_2026';
 
 const getAppUrl = () => {
   if (process.env.APP_URL) return process.env.APP_URL;
+  if (process.env.RAILWAY_STATIC_URL) return `https://${process.env.RAILWAY_STATIC_URL}`;
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) return `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
   if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
-  return 'https://csk-gamma.vercel.app';
+  return 'https://cskelectronicservices.up.railway.app';
 };
 
 app.use(cors());
@@ -212,74 +214,48 @@ app.post('/api/auth/register', (req, res) => {
   data.users.push(newUser);
   db.saveData(data);
 
-  // Send Welcome Email (Clean, high-end business format, includes website dashboard button)
+  // Send Welcome Email
+  const regDate = mailService.fmtDate(new Date());
   const welcomeEmailHtml = mailService.buildEmailTemplate({
-    title: 'Welcome to CSK Electronics!',
+    title: 'Welcome to CSK Electronics! 🎉',
     bodyHtml: `
-      <p>Dear ${name},</p>
-      <p>Thank you for registering your account with <strong>CSK Electronics</strong>. Your customer profile has been created successfully.</p>
-      
-      <div style="background-color: #fff1f2; border: 1.5px solid #f43f5e; padding: 20px; border-radius: 10px; margin-bottom: 25px;">
-        <h4 style="margin: 0 0 8px 0; font-size: 15px; color: #e11d48; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">
-          ⚠️ Important Notice: Independent Multi-Brand Service
-        </h4>
-        <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #9f1239; font-weight: 500;">
-          Please note: <strong>This is not an Authorized TV Service Center</strong>. CSK Electronics is an independent service center specializing in repairs of <strong>all types and brands of TVs</strong> (Samsung, Sony, LG, Panasonic, TCL, etc.). This independent status allows us to offer more flexible repair timelines, customized micro-soldering solutions, and highly competitive pricing compared to official brand service centers.
-        </p>
+      <p>Dear <strong>${name}</strong>,</p>
+      <p>Thank you for registering with <strong>CSK Electronics</strong>. Your customer account has been created successfully and you can now login to track your TV repair jobs.</p>
+
+      <div class="notice-box">
+        <h4>⚠️ Important: Independent Multi-Brand Service Center</h4>
+        <p>This is <strong>not an Authorized Brand Service Center</strong>. CSK Electronics is an independent repair center specializing in <strong>all brands of TVs</strong> (Samsung, Sony, LG, Panasonic, TCL, Mi, Hisense, Philips, OnePlus &amp; more). We offer competitive pricing and flexible repair timelines.</p>
       </div>
 
-      <p>Here are your registered account details:</p>
+      <p class="section-title">📋 Your Account Details</p>
       <table class="details-table">
-        <tr>
-          <td class="label">Full Name</td>
-          <td class="value">${name}</td>
-        </tr>
-        <tr>
-          <td class="label">Email Address</td>
-          <td class="value">${email}</td>
-        </tr>
-        <tr>
-          <td class="label">Phone Number</td>
-          <td class="value">${phone || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td class="label">Address</td>
-          <td class="value">${address || 'N/A'}</td>
-        </tr>
+        <tr><td class="label">Full Name</td><td class="value"><strong>${name}</strong></td></tr>
+        <tr><td class="label">Email Address</td><td class="value">${email}</td></tr>
+        <tr><td class="label">Phone Number</td><td class="value">${phone || 'N/A'}</td></tr>
+        <tr><td class="label">Address</td><td class="value">${address || 'N/A'}</td></tr>
+        <tr><td class="label">Registered On</td><td class="value">${regDate}</td></tr>
+        <tr><td class="label">Account Role</td><td class="value"><span class="badge badge-info">Customer</span></td></tr>
       </table>
 
-      <h3 style="font-size: 15px; font-weight: 700; color: #0f172a; margin-top: 25px; margin-bottom: 10px;">We Repair and Service All Major Brands</h3>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 25px;">
-        <tr>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Samsung</td>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Sony</td>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">LG</td>
-        </tr>
-        <tr>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Panasonic</td>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">TCL</td>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">OnePlus</td>
-        </tr>
-        <tr>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Mi / Xiaomi</td>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Hisense</td>
-          <td style="width: 33%; text-align: center; padding: 8px; font-weight: bold; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 4px; font-size: 12px; color: #475569;">Philips</td>
-        </tr>
-      </table>
+      <p>Through your customer dashboard you can:</p>
+      <ul style="color:#475569; font-size:14px; line-height:2;">
+        <li>📝 Register TV repair complaints</li>
+        <li>🔍 Track repair status in real-time</li>
+        <li>✅ Approve/reject service estimates</li>
+        <li>🖊️ Sign invoices digitally</li>
+      </ul>
 
-      <p>Through your customer dashboard, you can track active TV repair jobs, review and approve inspection estimates, and sign final invoices online.</p>
-
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="${getAppUrl()}" style="display: inline-block; padding: 12px 28px; background-color: #1e3a8a; color: #ffffff; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 15px; box-shadow: 0 4px 12px rgba(30, 58, 138, 0.25);">Go to Website Dashboard</a>
+      <div style="text-align: center; margin: 28px 0;">
+        <a href="${getAppUrl()}" class="btn">🚀 Go to My Dashboard</a>
       </div>
     `
   });
 
   mailService.sendMail({
     to: email,
-    subject: 'CSK Electronics - Welcome & Registration Successful',
+    subject: 'CSK Electronics - Welcome & Registration Successful ✅',
     html: welcomeEmailHtml
-  }).catch(err => console.error("Error sending welcome email:", err.message));
+  }).catch(err => console.error('Error sending welcome email:', err.message));
 
   // Send Welcome SMS
   const welcomeSmsMessage = `Welcome to CSK Electronics, ${name}!\nYour account has been registered successfully.\nYou can now login using your email: ${email}\nLogin: ${getAppUrl()}`;
@@ -789,29 +765,42 @@ app.post('/api/admin/email-config/test', authenticateToken, requireRole(['admin'
   try {
     const data = db.getData();
     const config = data.emailConfig || {};
-    // Send test mail to the configured real admin email (or fallback to login email)
+
+    if (!config.smtpUser || !config.smtpPass) {
+      return res.status(400).json({ error: 'SMTP credentials are missing. Please fill in SMTP Username and App Password, then click Save Mail Settings before testing.' });
+    }
+
     const testTarget = config.defaultAdminEmail || req.user.email;
+    const sentAt = mailService.fmtDate(new Date());
     const testHtml = mailService.buildEmailTemplate({
-      title: 'SMTP Connection Working Successfully',
+      title: '✅ SMTP Connection Test — Success!',
       bodyHtml: `
-        <p>This email confirms that your SMTP settings in the CSK Electronics Repair System are configured correctly and working perfectly.</p>
+        <p>This email confirms that your SMTP settings in the <strong>CSK Electronics Service System</strong> are configured correctly and sending emails successfully.</p>
+        <p class="section-title">📡 SMTP Configuration</p>
         <table class="details-table">
           <tr><td class="label">SMTP Host</td><td class="value">${config.smtpHost}</td></tr>
           <tr><td class="label">SMTP Port</td><td class="value">${config.smtpPort}</td></tr>
-          <tr><td class="label">SMTP User</td><td class="value">${config.smtpUser}</td></tr>
-          <tr><td class="label">Sent At</td><td class="value">${new Date().toLocaleString('en-IN')}</td></tr>
+          <tr><td class="label">Connection</td><td class="value">${config.smtpPort === 465 ? 'SSL/TLS (Port 465)' : 'STARTTLS (Port 587)'}</td></tr>
+          <tr><td class="label">SMTP Account</td><td class="value">${config.smtpUser}</td></tr>
+          <tr><td class="label">Sent To</td><td class="value">${testTarget}</td></tr>
+          <tr><td class="label">Sent At</td><td class="value">${sentAt}</td></tr>
+          <tr><td class="label">Server</td><td class="value">${getAppUrl()}</td></tr>
         </table>
+        <p style="color:#16a34a; font-weight:600;">✅ All email notifications (registration, assignment, estimates, invoices) will now be delivered to customers and technicians automatically.</p>
+        <div style="text-align:center; margin: 24px 0;">
+          <a href="${getAppUrl()}" class="btn">Go to Admin Dashboard</a>
+        </div>
       `
     });
     await mailService.sendMail({
       to: testTarget,
-      subject: 'CSK Electronics - SMTP Test Connection ✅',
+      subject: '✅ CSK Electronics - SMTP Test Successful',
       html: testHtml
     });
-    res.json({ message: `Test email sent to ${testTarget}! Check your inbox.` });
+    res.json({ message: `✅ Test email sent successfully to ${testTarget}! Check your inbox (also check Spam folder).` });
   } catch (err) {
     console.error('[TEST EMAIL ERROR]', err.message);
-    res.status(500).json({ error: `Connection failed: ${err.message}` });
+    res.status(500).json({ error: `❌ Connection failed: ${err.message}` });
   }
 });
 
@@ -847,84 +836,87 @@ app.post('/api/admin/assign', authenticateToken, requireRole(['admin']), (req, r
   mailService.sendSimulatedSMS(customerPhone, customerSmsMessage);
 
   // Send Customer Email
+  const assignDate = mailService.fmtDate(new Date());
   const customerMailHtml = mailService.buildEmailTemplate({
-    title: 'Technician Assigned to Your Repair Request',
+    title: '🔧 Technician Assigned to Your Repair Request',
     bodyHtml: `
-      <p>Dear ${customer.name || 'Valued Customer'},</p>
-      <p>An engineer has been assigned to diagnose and repair your TV. Details are below:</p>
+      <p>Dear <strong>${customer.name || 'Valued Customer'}</strong>,</p>
+      <p>Great news! A qualified engineer has been assigned to diagnose and repair your TV. Please expect a call to schedule the visit.</p>
+
+      <p class="section-title">📋 Request Details</p>
       <table class="details-table">
-        <tr>
-          <td class="label">Request ID</td>
-          <td class="value">${requestId}</td>
-        </tr>
-        <tr>
-          <td class="label">TV Details</td>
-          <td class="value">${request.tvBrand} - ${request.tvModel}</td>
-        </tr>
-        <tr>
-          <td class="label">Technician Name</td>
-          <td class="value" style="font-weight: bold;">${technician.name}</td>
-        </tr>
-        <tr>
-          <td class="label">Technician Phone</td>
-          <td class="value">${technician.phone || '7075750640, 7981785948'}</td>
-        </tr>
-        <tr>
-          <td class="label">Status</td>
-          <td class="value"><span class="badge badge-primary">Assigned</span></td>
-        </tr>
+        <tr><td class="label">Request ID</td><td class="value"><strong>${requestId}</strong></td></tr>
+        <tr><td class="label">TV Brand &amp; Model</td><td class="value">${request.tvBrand} — ${request.tvModel}</td></tr>
+        <tr><td class="label">Reported Problem</td><td class="value">${request.problemDesc}</td></tr>
+        <tr><td class="label">Request Date</td><td class="value">${mailService.fmtDate(request.createdAt)}</td></tr>
+        <tr><td class="label">Assigned On</td><td class="value">${assignDate}</td></tr>
+        <tr><td class="label">Status</td><td class="value"><span class="badge badge-primary">Assigned</span></td></tr>
       </table>
-      <p>The technician will reach out to you shortly at your registered phone number (<strong>${customerPhone}</strong>) to schedule an inspection visit.</p>
+
+      <p class="section-title">👨‍🔧 Assigned Technician</p>
+      <table class="details-table">
+        <tr><td class="label">Technician Name</td><td class="value"><strong>${technician.name}</strong></td></tr>
+        <tr><td class="label">Contact Number</td><td class="value">${technician.phone || '7075750640, 7981785948'}</td></tr>
+        <tr><td class="label">Specialization</td><td class="value">${technician.specialization || 'General TV Repair'}</td></tr>
+      </table>
+
+      <p class="section-title">🏠 Your Contact Details on File</p>
+      <table class="details-table">
+        <tr><td class="label">Your Name</td><td class="value">${customer.name || 'N/A'}</td></tr>
+        <tr><td class="label">Your Phone</td><td class="value">${customerPhone}</td></tr>
+        <tr><td class="label">Your Address</td><td class="value">${customer.address || 'N/A'}</td></tr>
+      </table>
+
+      <p style="color:#475569;">The technician will contact you at <strong>${customerPhone}</strong> to schedule the inspection. Please keep your phone accessible.</p>
+      <div style="text-align:center; margin:24px 0;">
+        <a href="${getAppUrl()}" class="btn">📱 Track Your Request</a>
+      </div>
     `
   });
-  
+
   mailService.sendMail({
     to: customerEmail,
-    subject: `CSK Electronics - Technician Assigned to Request: ${requestId}`,
+    subject: `CSK Electronics - Technician Assigned ✅ — Request: ${requestId}`,
     html: customerMailHtml
-  }).catch(err => console.error("Error sending assignment email to customer:", err.message));
+  }).catch(err => console.error('Error sending assignment email to customer:', err.message));
 
   // Send Technician Email
   const technicianMailHtml = mailService.buildEmailTemplate({
-    title: 'New Service Job Assigned',
+    title: '🛠️ New Service Job Assigned to You',
     bodyHtml: `
-      <p>Hello ${technician.name},</p>
-      <p>A TV repair request has been assigned to you. Details are below:</p>
+      <p>Hello <strong>${technician.name}</strong>,</p>
+      <p>A new TV repair request has been assigned to you by Admin. Please contact the customer as soon as possible to schedule an inspection visit.</p>
+
+      <p class="section-title">📋 Job Details</p>
       <table class="details-table">
-        <tr>
-          <td class="label">Request ID</td>
-          <td class="value">${requestId}</td>
-        </tr>
-        <tr>
-          <td class="label">Customer Name</td>
-          <td class="value">${customer.name || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td class="label">Customer Phone</td>
-          <td class="value">${customerPhone}</td>
-        </tr>
-        <tr>
-          <td class="label">Customer Address</td>
-          <td class="value">${customer.address || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td class="label">TV Details</td>
-          <td class="value">${request.tvBrand} - ${request.tvModel}</td>
-        </tr>
-        <tr>
-          <td class="label">Reported Defect</td>
-          <td class="value">${request.problemDesc}</td>
-        </tr>
+        <tr><td class="label">Request ID</td><td class="value"><strong>${requestId}</strong></td></tr>
+        <tr><td class="label">TV Brand &amp; Model</td><td class="value">${request.tvBrand} — ${request.tvModel}</td></tr>
+        <tr><td class="label">Reported Defect</td><td class="value">${request.problemDesc}</td></tr>
+        <tr><td class="label">Request Raised On</td><td class="value">${mailService.fmtDate(request.createdAt)}</td></tr>
+        <tr><td class="label">Assigned On</td><td class="value">${assignDate}</td></tr>
+        <tr><td class="label">Status</td><td class="value"><span class="badge badge-primary">Assigned</span></td></tr>
       </table>
-      <p>Please contact the customer as soon as possible to schedule the inspection visit.</p>
+
+      <p class="section-title">👤 Customer Contact Information</p>
+      <table class="details-table">
+        <tr><td class="label">Customer Name</td><td class="value"><strong>${customer.name || 'N/A'}</strong></td></tr>
+        <tr><td class="label">Phone Number</td><td class="value"><strong>${customerPhone}</strong></td></tr>
+        <tr><td class="label">Address</td><td class="value">${customer.address || 'N/A'}</td></tr>
+        <tr><td class="label">Email</td><td class="value">${customerEmail}</td></tr>
+      </table>
+
+      <p style="color:#dc2626; font-weight:600;">⚡ Please call the customer immediately to confirm the appointment.</p>
+      <div style="text-align:center; margin:24px 0;">
+        <a href="${getAppUrl()}" class="btn">📂 View My Jobs</a>
+      </div>
     `
   });
 
   mailService.sendMail({
     to: technician.email || 'tech@csk.com',
-    subject: `CSK Electronics - New Repair Job Assigned: ${requestId}`,
+    subject: `CSK Electronics - New Job Assigned 🛠️ — ${requestId}`,
     html: technicianMailHtml
-  }).catch(err => console.error("Error sending job assignment email to technician:", err.message));
+  }).catch(err => console.error('Error sending job assignment email to technician:', err.message));
 
   // Send Technician SMS
   const techSmsMessage = `CSK Electronics Job Alert:\nYou have been assigned to repair request ${requestId}.\nCustomer: ${customer.name || 'N/A'} (${customerPhone})\nTV: ${request.tvBrand} - ${request.tvModel}\nView: ${getAppUrl()}`;
@@ -993,76 +985,80 @@ app.post('/api/customer/request', authenticateToken, requireRole(['customer']), 
   const smsMessage = `CSK Electronics Alert:\nYour complaint ${requestId} has been registered.\nTV: ${tvBrand} - ${tvModel}\nProblem: ${problemDesc}\nStatus: ${status}\nTrack: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(customerPhone, smsMessage);
 
-  // Send Customer Email
+  const complaintDate = mailService.fmtDate(new Date());
+
+  // Send Customer Confirmation Email
   const customerMailHtml = mailService.buildEmailTemplate({
-    title: 'Repair Request Registered Successfully',
+    title: '📝 Repair Request Registered Successfully',
     bodyHtml: `
-      <p>Dear ${customer.name || 'Valued Customer'},</p>
-      <p>Your TV repair service request has been successfully registered. Here are the details:</p>
+      <p>Dear <strong>${customer.name || 'Valued Customer'}</strong>,</p>
+      <p>Your TV repair service request has been <strong>successfully registered</strong> with CSK Electronics. Our team will assign a technician shortly and contact you to schedule an inspection.</p>
+
+      <p class="section-title">📋 Complaint Details</p>
       <table class="details-table">
-        <tr>
-          <td class="label">Request ID</td>
-          <td class="value">${requestId}</td>
-        </tr>
-        <tr>
-          <td class="label">TV Details</td>
-          <td class="value">${tvBrand} - ${tvModel}</td>
-        </tr>
-        <tr>
-          <td class="label">Reported Problem</td>
-          <td class="value">${problemDesc}</td>
-        </tr>
-        <tr>
-          <td class="label">Status</td>
-          <td class="value"><span class="badge badge-success">${status}</span></td>
-        </tr>
+        <tr><td class="label">Request ID</td><td class="value"><strong>${requestId}</strong></td></tr>
+        <tr><td class="label">TV Brand</td><td class="value">${tvBrand}</td></tr>
+        <tr><td class="label">TV Model</td><td class="value">${tvModel}</td></tr>
+        <tr><td class="label">Reported Problem</td><td class="value">${problemDesc}</td></tr>
+        <tr><td class="label">Registered On</td><td class="value">${complaintDate}</td></tr>
+        <tr><td class="label">Current Status</td><td class="value"><span class="badge badge-warning">New — Awaiting Assignment</span></td></tr>
       </table>
-      <p>We will contact you shortly to coordinate the repair process.</p>
+
+      <p class="section-title">🏠 Your Contact Details on File</p>
+      <table class="details-table">
+        <tr><td class="label">Your Name</td><td class="value">${customer.name || 'N/A'}</td></tr>
+        <tr><td class="label">Your Phone</td><td class="value">${customerPhone}</td></tr>
+        <tr><td class="label">Your Address</td><td class="value">${customer.address || 'N/A'}</td></tr>
+      </table>
+
+      <p>You will receive another email once a technician is assigned. You can also track the status of your request live from your customer dashboard.</p>
+      <div style="text-align:center; margin:24px 0;">
+        <a href="${getAppUrl()}" class="btn">📱 Track My Request</a>
+      </div>
     `
   });
-  
+
   mailService.sendMail({
     to: customerEmail,
-    subject: `CSK Electronics - Repair Request Registered: ${requestId}`,
+    subject: `CSK Electronics - Request Registered ✅ — ${requestId} (${tvBrand} ${tvModel})`,
     html: customerMailHtml
-  }).catch(err => console.error("Error sending customer registration email:", err.message));
+  }).catch(err => console.error('Error sending customer complaint email:', err.message));
 
-  // Send Admin Email (no local links to avoid spam filters)
+  // Send Admin Alert Email
   const adminMailHtml = mailService.buildEmailTemplate({
-    title: `New Service Request: ${requestId}`,
+    title: `🚨 New Service Request: ${requestId}`,
     bodyHtml: `
-      <p>A new TV repair request has been submitted by a customer:</p>
+      <p>A new TV repair request has been submitted by a customer. Please log in to assign a technician.</p>
+
+      <p class="section-title">👤 Customer Information</p>
       <table class="details-table">
-        <tr>
-          <td class="label">Customer Name</td>
-          <td class="value">${customer.name || 'N/A'}</td>
-        </tr>
-        <tr>
-          <td class="label">Phone Number</td>
-          <td class="value">${customerPhone}</td>
-        </tr>
-        <tr>
-          <td class="label">TV Details</td>
-          <td class="value">${tvBrand} - ${tvModel}</td>
-        </tr>
-        <tr>
-          <td class="label">Problem</td>
-          <td class="value">${problemDesc}</td>
-        </tr>
-        <tr>
-          <td class="label">Status</td>
-          <td class="value"><span class="badge badge-danger">${status}</span></td>
-        </tr>
+        <tr><td class="label">Customer Name</td><td class="value"><strong>${customer.name || 'N/A'}</strong></td></tr>
+        <tr><td class="label">Phone Number</td><td class="value"><strong>${customerPhone}</strong></td></tr>
+        <tr><td class="label">Email</td><td class="value">${customerEmail}</td></tr>
+        <tr><td class="label">Address</td><td class="value">${customer.address || 'N/A'}</td></tr>
       </table>
-      <p>Please log in to the admin panel to assign a technician to this request.</p>
+
+      <p class="section-title">📺 Device &amp; Problem Details</p>
+      <table class="details-table">
+        <tr><td class="label">Request ID</td><td class="value"><strong>${requestId}</strong></td></tr>
+        <tr><td class="label">TV Brand</td><td class="value">${tvBrand}</td></tr>
+        <tr><td class="label">TV Model</td><td class="value">${tvModel}</td></tr>
+        <tr><td class="label">Reported Problem</td><td class="value">${problemDesc}</td></tr>
+        <tr><td class="label">Submitted On</td><td class="value">${complaintDate}</td></tr>
+        <tr><td class="label">Status</td><td class="value"><span class="badge badge-danger">New — Needs Technician</span></td></tr>
+      </table>
+
+      <div style="text-align:center; margin:24px 0;">
+        <a href="${getAppUrl()}" class="btn">🔧 Assign Technician Now</a>
+      </div>
     `
   });
-  
+
   mailService.sendMail({
     to: adminEmail,
-    subject: `CSK Electronics - New Service Request: ${requestId} - ${tvBrand}`,
+    subject: `🚨 CSK Electronics - New Request: ${requestId} — ${tvBrand} ${tvModel}`,
     html: adminMailHtml
-  }).catch(err => console.error("Error sending admin alert email:", err.message));
+  }).catch(err => console.error('Error sending admin alert email:', err.message));
 
   // Broadcast
   broadcast('NEW_COMPLAINT', `New complaint ${requestId} registered by ${req.user.name}.`, {
@@ -1341,38 +1337,46 @@ app.post('/api/technician/complete', authenticateToken, requireRole(['technician
   const smsMessage = `CSK Electronics Update:\nRepair for request ${requestId} has been completed.\nInvoice ${invoiceNum} generated (Total: Rs. ${total.toFixed(2)}).\nPlease sign digitally: ${getAppUrl()}`;
   mailService.sendSimulatedSMS(customer.phone || 'N/A', smsMessage);
 
+  const repairDate = mailService.fmtDate(new Date());
   mailService.generateInvoicePDF(request, newInvoice, customer, technician).then(pdfBuffer => {
     const invoiceMailHtml = mailService.buildEmailTemplate({
-      title: 'TV Repair Completed & Invoice Generated',
+      title: '🎉 TV Repair Completed — Invoice Ready',
       bodyHtml: `
-        <p>Dear ${customer.name || 'Valued Customer'},</p>
-        <p>Great news! The service repair for your TV has been completed. A tax invoice has been generated for your reference.</p>
+        <p>Dear <strong>${customer.name || 'Valued Customer'}</strong>,</p>
+        <p>Your TV repair has been <strong>successfully completed</strong>! The official Tax Invoice PDF is attached to this email for your records.</p>
+
+        <p class="section-title">🧾 Invoice Summary</p>
         <table class="details-table">
-          <tr>
-            <td class="label">Invoice Number</td>
-            <td class="value" style="font-weight: bold;">${invoiceNum}</td>
-          </tr>
-          <tr>
-            <td class="label">Request ID</td>
-            <td class="value">${requestId}</td>
-          </tr>
-          <tr>
-            <td class="label">TV Details</td>
-            <td class="value">${request.tvBrand} - ${request.tvModel}</td>
-          </tr>
-          <tr>
-            <td class="label">Total Billed</td>
-            <td class="value" style="font-weight: bold; color: #10b981;">₹${total.toFixed(2)}</td>
-          </tr>
+          <tr><td class="label">Invoice Number</td><td class="value"><strong>${invoiceNum}</strong></td></tr>
+          <tr><td class="label">Request ID</td><td class="value">${requestId}</td></tr>
+          <tr><td class="label">TV Brand &amp; Model</td><td class="value">${request.tvBrand} — ${request.tvModel}</td></tr>
+          <tr><td class="label">Reported Problem</td><td class="value">${request.problemDesc}</td></tr>
+          <tr><td class="label">Repaired On</td><td class="value">${repairDate}</td></tr>
+          <tr><td class="label">Technician</td><td class="value">${technician ? technician.name : 'CSK Admin'}</td></tr>
         </table>
-        <p>We have attached the official Tax Invoice PDF to this email. Please review it at your convenience.</p>
-        <p>To finalize the invoice and download it from our website, you can also sign it digitally from your customer dashboard.</p>
+
+        <p class="section-title">💰 Billing Breakdown</p>
+        <table class="details-table">
+          <tr><td class="label">Inspection Charge</td><td class="value">₹${inspect.toFixed(2)}</td></tr>
+          <tr><td class="label">Spare Parts</td><td class="value">₹${spares.toFixed(2)}</td></tr>
+          <tr><td class="label">Labour Charges</td><td class="value">₹${labour.toFixed(2)}</td></tr>
+          <tr><td class="label">Additional Charges</td><td class="value">₹${additional.toFixed(2)}</td></tr>
+          <tr><td class="label">Technical Notes</td><td class="value">${technicianNotes || 'TV repaired successfully.'}</td></tr>
+          <tr><td class="label" style="font-size:15px;">💰 Grand Total</td><td class="value"><span class="amount-highlight">₹${total.toFixed(2)}</span></td></tr>
+        </table>
+
+        <p>The PDF invoice is attached to this email. You can also log into your dashboard to sign the invoice digitally and download a copy.</p>
+        <p style="font-size:13px; color:#64748b;">🛡️ Warranty: Replaced components carry a <strong>90-day warranty</strong> from repair date.</p>
+
+        <div style="text-align:center; margin:24px 0;">
+          <a href="${getAppUrl()}" class="btn">🖊️ Sign &amp; Download Invoice</a>
+        </div>
       `
     });
-    
+
     return mailService.sendMail({
       to: customerEmail,
-      subject: `CSK Electronics - Repair Invoice ${invoiceNum} Generated`,
+      subject: `CSK Electronics - Invoice ${invoiceNum} Ready 🧾 — ₹${total.toFixed(2)} (${request.tvBrand} ${request.tvModel})`,
       html: invoiceMailHtml,
       attachments: [
         {
@@ -1383,7 +1387,7 @@ app.post('/api/technician/complete', authenticateToken, requireRole(['technician
       ]
     });
   }).catch(err => {
-    console.error("Error generating or sending completion invoice mail:", err.message);
+    console.error('Error generating or sending completion invoice mail:', err.message);
   });
   
   broadcast('REPAIR_COMPLETED', `Repair completed and Invoice ${invoiceNum} generated for Request ${requestId}.`, {
