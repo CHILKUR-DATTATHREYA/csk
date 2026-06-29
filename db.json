@@ -28,8 +28,8 @@
   "updates": [],
   "emailConfig": {
     "smtpHost": "smtp.gmail.com",
-    "smtpPort": 587,
-    "smtpSecure": false,
+    "smtpPort": 465,
+    "smtpSecure": true,
     "smtpUser": "cskelectronicservices@gmail.com",
     "smtpPass": "nlgunutixumkpejc",
     "defaultFrom": "CSK Electronics <cskelectronicservices@gmail.com>",

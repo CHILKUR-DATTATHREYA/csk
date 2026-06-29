@@ -22,14 +22,13 @@ function getTransporter() {
     host,
     port,
     secure,
-    requireTLS: !secure,          // Force STARTTLS upgrade on port 587
-    family: 4,                    // ✅ CRITICAL: Force IPv4 — Railway blocks IPv6 outbound (ENETUNREACH fix)
+    family: 4,                    // ✅ Force IPv4 — Railway blocks IPv6 outbound
     auth: user && pass ? { user, pass } : undefined,
-    connectionTimeout: 15000,     // 15s connection timeout (Railway-friendly)
-    greetingTimeout: 10000,
+    connectionTimeout: 20000,
+    greetingTimeout: 15000,
     socketTimeout: 30000,
     tls: {
-      rejectUnauthorized: false   // Tolerate self-signed certs in cloud
+      rejectUnauthorized: false
     }
   });
 }
