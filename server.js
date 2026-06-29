@@ -339,7 +339,7 @@ app.post('/api/auth/login', async (req, res) => {
   });
 });
 
-app.post('/api/auth/forgot-password', (req, res) => {
+app.post('/api/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
   if (!email) {
     return res.status(400).json({ error: 'Email is required' });
@@ -352,40 +352,64 @@ app.post('/api/auth/forgot-password', (req, res) => {
     return res.status(404).json({ error: 'No account registered with this email address' });
   }
   
-  // Generate a random temporary password (8 characters)
+  // Generate a random temporary password
   const tempPassword = 'CSK-' + Math.random().toString(36).substring(2, 8).toUpperCase();
   
-  // Hash the temporary password
+  // Hash and save the temporary password
   const salt = bcrypt.genSaltSync(10);
   user.passwordHash = bcrypt.hashSync(tempPassword, salt);
   db.saveData(data);
   
-  // Send Password Reset Email (Clean, high-end business format, no local links to avoid spam filter)
+  // Build the reset email
+  const resetDate = mailService.fmtDate(new Date());
   const emailHtml = mailService.buildEmailTemplate({
-    title: 'Password Reset Request',
+    title: '🔐 Password Reset — Temporary Password',
     bodyHtml: `
-      <p>Dear ${user.name || 'Valued Customer'},</p>
-      <p>We received a request to reset the password for your CSK Electronics account.</p>
-      <p>Your temporary password is:</p>
-      <div style="background-color: #f8fafc; border: 1.5px dashed #cbd5e1; padding: 16px; text-align: center; font-size: 1.5rem; font-weight: bold; letter-spacing: 2px; color: #1e3a8a; border-radius: 8px; margin: 15px 0;">
-        ${tempPassword}
+      <p>Dear <strong>${user.name || 'Valued Customer'}</strong>,</p>
+      <p>We received a password reset request for your CSK Electronics account. A temporary password has been generated for you.</p>
+
+      <p class="section-title">🔑 Your Temporary Password</p>
+      <div style="background: linear-gradient(135deg, #1e3a8a, #2563eb); border-radius: 10px; padding: 24px; text-align: center; margin: 20px 0;">
+        <div style="font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #ffffff; font-family: monospace;">${tempPassword}</div>
+        <div style="font-size: 12px; color: #bfdbfe; margin-top: 8px; text-transform: uppercase; letter-spacing: 1px;">Tap to copy and use at login</div>
       </div>
-      <p>Please use this temporary password to log in. Once logged in, you can update your password in your profile settings if needed.</p>
-      <p style="color: #ef4444; font-size: 0.85em; margin-top: 15px;"><strong>Note:</strong> If you did not request this reset, please ignore this email or contact support.</p>
+
+      <table class="details-table">
+        <tr><td class="label">Account Email</td><td class="value">${user.email}</td></tr>
+        <tr><td class="label">Account Name</td><td class="value">${user.name || 'N/A'}</td></tr>
+        <tr><td class="label">Requested At</td><td class="value">${resetDate}</td></tr>
+      </table>
+
+      <p>Use this temporary password to log into your account. After logging in, you can update your password from your profile settings.</p>
+
+      <p style="background-color:#fef2f2; border-left:4px solid #ef4444; padding:12px 16px; border-radius:6px; font-size:14px; color:#991b1b;">
+        <strong>⚠️ Security Notice:</strong> If you did not request this password reset, please ignore this email. Your account remains secure.
+      </p>
+
+      <div style="text-align:center; margin:24px 0;">
+        <a href="${getAppUrl()}" class="btn">🔓 Login with Temporary Password</a>
+      </div>
     `
   });
-  
-  mailService.sendMail({
-    to: user.email,
-    subject: 'CSK Electronics - Password Reset Request',
-    html: emailHtml
-  }).catch(err => console.error("Error sending forgot password email:", err.message));
-  
-  // Send Password Reset SMS
-  const smsMessage = `CSK Electronics Alert:\nYour password has been reset. Temporary password: ${tempPassword}\nPlease login and change it: ${getAppUrl()}`;
-  mailService.sendSimulatedSMS(user.phone || 'N/A', smsMessage);
-  
-  res.json({ message: 'Temporary password sent to your registered email and mobile number!' });
+
+  // AWAIT the email — return real error if it fails (instead of false "success" popup)
+  try {
+    await mailService.sendMail({
+      to: user.email,
+      subject: '🔐 CSK Electronics - Password Reset — Temporary Password Inside',
+      html: emailHtml
+    });
+    // Send SMS notification
+    const smsMessage = `CSK Electronics:\nPassword reset requested.\nTemp password: ${tempPassword}\nLogin: ${getAppUrl()}`;
+    mailService.sendSimulatedSMS(user.phone || 'N/A', smsMessage);
+    res.json({ message: `✅ Temporary password sent to ${user.email}. Please check your inbox (also check Spam folder).` });
+  } catch (err) {
+    console.error('[FORGOT PASSWORD EMAIL ERROR]', err.message);
+    // Password was already changed — inform user so they can contact admin
+    res.status(500).json({ 
+      error: `❌ Email delivery failed: ${err.message}. Your password has been reset — please contact admin at 7075750640 for the temporary password.` 
+    });
+  }
 });
 
 app.post('/api/auth/change-password', authenticateToken, (req, res) => {

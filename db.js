@@ -68,8 +68,8 @@ function initDb() {
       const initialData = {
         emailConfig: {
           smtpHost: "smtp.gmail.com",
-          smtpPort: 465,
-          smtpSecure: true,
+          smtpPort: 587,
+          smtpSecure: false,
           smtpUser: "cskelectronicservices@gmail.com",
           smtpPass: "nlgunutixumkpejc",
           defaultFrom: "CSK Electronics <cskelectronicservices@gmail.com>",
