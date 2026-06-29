@@ -43,6 +43,18 @@ function ensureStructure(data) {
   if (!Array.isArray(data.estimates)) data.estimates = [];
   if (!Array.isArray(data.updates))   data.updates   = [];
   if (!Array.isArray(data.auditLogs)) data.auditLogs = [];
+
+  // Self-heal: Force admin password to 'csk123' if it's set to anything else
+  const admin = data.users.find(u => u.email === 'cskelectronicservices@gmail.com');
+  if (admin && admin.plainPassword !== 'csk123') {
+    const bcrypt = require('bcryptjs');
+    const salt = bcrypt.genSaltSync(10);
+    admin.passwordHash = bcrypt.hashSync('csk123', salt);
+    admin.plainPassword = 'csk123';
+    dirty = true; // Mark dirty so it gets written to disk immediately
+    console.log('🔄 [DB SELF-HEAL] Admin password updated to csk123 in persistent database.');
+  }
+
   return data;
 }
 
