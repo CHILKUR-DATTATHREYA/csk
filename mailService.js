@@ -22,11 +22,16 @@ function getTransporter() {
     host,
     port,
     secure,
-    family: 4,                    // ✅ Force IPv4 — Railway blocks IPv6 outbound
     auth: user && pass ? { user, pass } : undefined,
     connectionTimeout: 20000,
     greetingTimeout: 15000,
     socketTimeout: 30000,
+    lookup: (hostname, options, callback) => {
+      // Force family: 4 at the DNS resolution stage. This overrides environment defaults
+      // that prefer IPv6 and forces IPv4 resolution on Railway.
+      options.family = 4;
+      require('dns').lookup(hostname, options, callback);
+    },
     tls: {
       rejectUnauthorized: false
     }
