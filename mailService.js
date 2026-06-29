@@ -23,6 +23,7 @@ function getTransporter() {
     port,
     secure,
     requireTLS: !secure,          // Force STARTTLS upgrade on port 587
+    family: 4,                    // ✅ CRITICAL: Force IPv4 — Railway blocks IPv6 outbound (ENETUNREACH fix)
     auth: user && pass ? { user, pass } : undefined,
     connectionTimeout: 15000,     // 15s connection timeout (Railway-friendly)
     greetingTimeout: 10000,
