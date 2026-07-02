@@ -34,7 +34,10 @@ fetch('/firebase-config.json')
   });
 
 // Base URL for API
-const API_BASE = '/api';
+let API_BASE = '/api';
+if (window.location.hostname.includes('vercel.app')) {
+  API_BASE = 'https://cskelectronicservices.up.railway.app/api';
+}
 
 // Intro Screen Timer
 window.addEventListener('DOMContentLoaded', () => {
