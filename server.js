@@ -215,6 +215,18 @@ function addRequestUpdate(data, requestId, status, note, updatedBy) {
 // NOTE: OTP verification codes are stored in db.json (not in-memory) so they
 // persist across serverless function restarts on Vercel/Railway.
 
+app.get('/api/auth/status', (req, res) => {
+  res.json({
+    useFirebase,
+    firebaseAuthInitialized: !!firebaseAuth,
+    firebaseAdminInitialized: !!firebaseAdmin,
+    hasServiceAccountEnv: !!process.env.FIREBASE_SERVICE_ACCOUNT,
+    hasClientConfigEnv: !!process.env.FIREBASE_CONFIG,
+    hasServiceAccountFile: fs.existsSync(serviceAccountPath),
+    hasClientConfigFile: fs.existsSync(clientConfigPath)
+  });
+});
+
 app.post('/api/auth/send-verification', async (req, res) => {
   const { email } = req.body;
   if (!email) {
