@@ -212,7 +212,8 @@ function addRequestUpdate(data, requestId, status, note, updatedBy) {
 }
 
 // AUTHENTICATION ENDPOINTS
-let pendingVerifications = {};
+// NOTE: OTP verification codes are stored in db.json (not in-memory) so they
+// persist across serverless function restarts on Vercel/Railway.
 
 app.post('/api/auth/send-verification', async (req, res) => {
   const { email } = req.body;
@@ -240,11 +241,13 @@ app.post('/api/auth/send-verification', async (req, res) => {
   // Generate 6-digit verification code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Store in pendingVerifications with 10 minute expiry
-  pendingVerifications[email.toLowerCase()] = {
+  // Store OTP in db.json (persists across serverless instances unlike in-memory)
+  if (!data.pendingVerifications) data.pendingVerifications = {};
+  data.pendingVerifications[email.toLowerCase()] = {
     code,
     expires: Date.now() + 10 * 60 * 1000
   };
+  db.saveData(data);
 
   // Send verification email
   const verificationEmailHtml = mailService.buildEmailTemplate({
@@ -283,7 +286,11 @@ app.post('/api/auth/send-verification', async (req, res) => {
 
 app.post('/api/auth/register', (req, res) => {
   const { email, password, name, phone, address, code, isGoogle } = req.body;
-  if (!email || (!password && !useFirebase && !isGoogle) || !name) {
+  // In Firebase mode, the password is managed by Firebase — CSK backend doesn't need it.
+  // In local JWT mode, password is required.
+  // isGoogle:true also bypasses password requirement.
+  const needsPassword = !useFirebase && !isGoogle;
+  if (!email || (needsPassword && !password) || !name) {
     return res.status(400).json({ error: 'Name, email, and password are required' });
   }
 
@@ -308,19 +315,23 @@ app.post('/api/auth/register', (req, res) => {
 
   // Verification code check (only if register via password/normal registration, i.e., !isGoogle)
   if (!isGoogle) {
-    const record = pendingVerifications[email.toLowerCase()];
+    const data2 = db.getData();
+    const verifs = data2.pendingVerifications || {};
+    const record = verifs[email.toLowerCase()];
     if (!record) {
       return res.status(400).json({ error: 'No verification code found for this email. Please request a new one.' });
     }
     if (record.expires < Date.now()) {
-      delete pendingVerifications[email.toLowerCase()];
+      delete data2.pendingVerifications[email.toLowerCase()];
+      db.saveData(data2);
       return res.status(400).json({ error: 'Verification code expired. Please request a new one.' });
     }
     if (record.code !== code) {
       return res.status(400).json({ error: 'Invalid verification code.' });
     }
     // Code is valid, remove it
-    delete pendingVerifications[email.toLowerCase()];
+    delete data2.pendingVerifications[email.toLowerCase()];
+    db.saveData(data2);
   }
   
   const data = db.getData();
