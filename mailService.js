@@ -27,10 +27,12 @@ function getTransporter() {
     greetingTimeout: 15000,
     socketTimeout: 30000,
     lookup: (hostname, options, callback) => {
-      // Force family: 4 at the DNS resolution stage. This overrides environment defaults
-      // that prefer IPv6 and forces IPv4 resolution on Railway.
-      options.family = 4;
-      require('dns').lookup(hostname, options, callback);
+      // Force family: 4. If options is a number or primitive, override with object.
+      let dnsOpts = { family: 4 };
+      if (options && typeof options === 'object') {
+        dnsOpts = { ...options, family: 4 };
+      }
+      require('dns').lookup(hostname, dnsOpts, callback);
     },
     tls: {
       rejectUnauthorized: false
