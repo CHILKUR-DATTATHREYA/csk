@@ -62,6 +62,25 @@ const getAppUrl = () => {
 
 app.use(cors());
 app.use(express.json());
+
+// Serve firebase-config.json dynamically so Vercel/Railway can inject it via env var
+// This runs BEFORE express.static so it takes priority if the physical file is missing
+app.get('/firebase-config.json', (req, res) => {
+  const configPath = path.join(__dirname, 'public', 'firebase-config.json');
+  if (fs.existsSync(configPath)) {
+    return res.sendFile(configPath);
+  }
+  if (process.env.FIREBASE_CONFIG) {
+    try {
+      const config = JSON.parse(process.env.FIREBASE_CONFIG);
+      return res.json(config);
+    } catch (e) {
+      return res.status(500).json({ error: 'Invalid FIREBASE_CONFIG env variable' });
+    }
+  }
+  res.status(404).json({ error: 'Firebase config not found' });
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Database Synchronization Middleware for Serverless Environment
