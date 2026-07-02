@@ -512,7 +512,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       
       // 2. Register metadata on CSK Backend
       try {
-        await apiCall('/auth/register', 'POST', { name, email, phone, address, code, isGoogle: false }, null, true);
+        await apiCall('/auth/register', 'POST', { name, email, phone, address, password, code, isGoogle: false }, null, true);
       } catch (backendErr) {
         // Clean up Firebase user if metadata registration fails
         if (userCredential && userCredential.user) {
