@@ -20,18 +20,163 @@
       "phone": "7075750640",
       "address": "",
       "specialization": "MOTHER BOARD"
+    },
+    {
+      "id": "u-04b65626",
+      "email": "chilkurdattathreya@gmail.com",
+      "passwordHash": "$2a$10$63m2OAuTXMWV.Z5XdP4dUubbI/GPz6eIM2/UJmfuk4xQRxnRQ5CLW",
+      "plainPassword": "dattu123",
+      "name": "DATTU",
+      "role": "customer",
+      "phone": "07981785948",
+      "address": "HYD"
+    },
+    {
+      "id": "u-b7c9ff75",
+      "email": "dattatreyachilkur@gmail.com",
+      "passwordHash": "$2a$10$.9pIQmkg.NmRXNTiR/e.fu35QwQtC8VLYC9B6H2aGNh4E2h8wF8d.",
+      "name": "Dattatreyachilkur",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "HYD"
+    },
+    {
+      "id": "u-b4dc8bfc",
+      "email": "chilkurdattathreya+test1@gmail.com",
+      "passwordHash": "$2a$10$67Gx1Nf8Q/yAWLaRCraQfu387WlO4yjPcVSLlBi.4RUfW5hasnZ6u",
+      "name": "CHILKUR DATTATHREYA",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "HYD"
+    },
+    {
+      "id": "u-fcf4cbe6",
+      "email": "sudeepnarayana967@gmail.com",
+      "passwordHash": "$2a$10$ZOR7RjuQ0vB4CI5Akz1rAuRSzxNZkm05EP32idDFLQ8f3ihQc587e",
+      "name": "sudeep",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "AP"
     }
   ],
-  "requests": [],
-  "estimates": [],
-  "invoices": [],
-  "updates": [],
+  "requests": [
+    {
+      "id": "REQ-1001",
+      "customerId": "u-04b65626",
+      "customerName": "DATTU",
+      "customerPhone": "07981785948",
+      "customerAddress": "HYD",
+      "tvBrand": "sony",
+      "tvModel": "KDL",
+      "problemDesc": "pannel",
+      "status": "Closed",
+      "assignedTechId": "u-admin",
+      "technicianName": null,
+      "createdAt": "2026-06-29T09:41:44.064Z",
+      "updatedAt": "2026-06-29T13:16:45.620Z"
+    }
+  ],
+  "estimates": [
+    {
+      "requestId": "REQ-1001",
+      "inspectionCharge": 500,
+      "sparePartsCost": 2000,
+      "labourCharges": 1000,
+      "additionalCharges": 200,
+      "totalEstimate": 3700,
+      "notes": "mother board replace",
+      "status": "Approved",
+      "updatedAt": "2026-06-29T13:13:18.127Z"
+    }
+  ],
+  "invoices": [
+    {
+      "id": "INV-10001",
+      "requestId": "REQ-1001",
+      "customerId": "u-04b65626",
+      "technicianId": "u-admin",
+      "inspectionCharge": 500,
+      "sparePartsCost": 2000,
+      "labourCharges": 1000,
+      "additionalCharges": 200,
+      "totalAmount": 3700,
+      "notes": "mother board replace",
+      "customerSignature": "data:image/png;base64,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",
+      "signedAt": "2026-06-29T13:16:06.236Z",
+      "createdAt": "2026-06-29T13:15:14.372Z"
+    }
+  ],
+  "updates": [
+    {
+      "requestId": "USER-MGMT",
+      "status": "User Created",
+      "note": "New customer \"DATTU\" (chilkurdattathreya@gmail.com) registered by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-29T09:40:12.076Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-29T09:41:44.064Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Assigned",
+      "note": "Technician TINKU manually assigned by Admin.",
+      "updatedBy": "Admin",
+      "createdAt": "2026-06-29T09:42:15.062Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Waiting Customer Approval",
+      "note": "Technician completed inspection and uploaded service estimate.",
+      "updatedBy": "Technician",
+      "createdAt": "2026-06-29T13:13:18.128Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Approved",
+      "note": "Estimate approved by customer.",
+      "updatedBy": "Customer",
+      "createdAt": "2026-06-29T13:14:24.472Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Repair In Progress",
+      "note": "Repair process started automatically after customer approval.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-29T13:14:24.472Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Repair Completed",
+      "note": "Repair completed successfully.",
+      "updatedBy": "TINKU",
+      "createdAt": "2026-06-29T13:15:14.373Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Invoice Generated",
+      "note": "Invoice INV-10001 generated with total bill of Rs. 3700.",
+      "updatedBy": "System",
+      "createdAt": "2026-06-29T13:15:14.373Z"
+    },
+    {
+      "requestId": "REQ-1001",
+      "status": "Closed",
+      "note": "TV Service Job marked completed and closed by Customer.",
+      "updatedBy": "DATTU",
+      "createdAt": "2026-06-29T13:16:45.620Z"
+    }
+  ],
   "emailConfig": {
     "smtpHost": "smtp.gmail.com",
     "smtpPort": 465,
     "smtpSecure": true,
     "smtpUser": "cskelectronicservices@gmail.com",
-    "smtpPass": "nlgunutixumkpejc",
+    "smtpPass": "wuvo fnhb jrgi lnwr",
     "defaultFrom": "CSK Electronics <cskelectronicservices@gmail.com>",
     "defaultAdminEmail": "cskelectronicservices@gmail.com"
   },

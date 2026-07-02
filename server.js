@@ -8,18 +8,33 @@ const path = require('path');
 const db = require('./db');
 const mailService = require('./mailService');
 
-// Firebase Admin SDK Configuration (Auto-detects credentials file)
+// Firebase Admin SDK Configuration (Auto-detects credentials file or env variables)
 const serviceAccountPath = path.join(__dirname, 'firebase-service-account.json');
 const clientConfigPath = path.join(__dirname, 'public', 'firebase-config.json');
 let firebaseAdmin = null;
 let firebaseAuth = null;
 let useFirebase = false;
 
-if (fs.existsSync(serviceAccountPath) && fs.existsSync(clientConfigPath)) {
+const hasServiceAccount = fs.existsSync(serviceAccountPath) || process.env.FIREBASE_SERVICE_ACCOUNT;
+const hasClientConfig = fs.existsSync(clientConfigPath) || process.env.FIREBASE_CONFIG;
+
+if (hasServiceAccount && hasClientConfig) {
   try {
     firebaseAdmin = require('firebase-admin');
     const { getAuth } = require('firebase-admin/auth');
-    const serviceAccount = require('./firebase-service-account.json');
+    
+    let serviceAccount;
+    if (fs.existsSync(serviceAccountPath)) {
+      serviceAccount = require('./firebase-service-account.json');
+    } else {
+      serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+    }
+    
+    // Dynamically write firebase-config.json if it doesn't exist but env var does
+    if (!fs.existsSync(clientConfigPath) && process.env.FIREBASE_CONFIG) {
+      fs.writeFileSync(clientConfigPath, process.env.FIREBASE_CONFIG, 'utf8');
+    }
+
     const appInstance = firebaseAdmin.initializeApp({
       credential: firebaseAdmin.cert(serviceAccount)
     });
@@ -30,7 +45,7 @@ if (fs.existsSync(serviceAccountPath) && fs.existsSync(clientConfigPath)) {
     console.error('❌ [FIREBASE] Error initializing firebase-admin SDK:', err.message);
   }
 } else {
-  console.log('🔐 [AUTH] Running in local JWT Auth mode. (Add firebase-service-account.json to root directory to enable Firebase)');
+  console.log('🔐 [AUTH] Running in local JWT Auth mode. (Add firebase-service-account.json to root directory or set FIREBASE_SERVICE_ACCOUNT/FIREBASE_CONFIG env variables to enable Firebase)');
 }
 
 const app = express();
@@ -178,10 +193,115 @@ function addRequestUpdate(data, requestId, status, note, updatedBy) {
 }
 
 // AUTHENTICATION ENDPOINTS
+let pendingVerifications = {};
+
+app.post('/api/auth/send-verification', async (req, res) => {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  // Validate email domain
+  const allowedDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com', 'csk.com', 'live.com', 'msn.com', 'aol.com', 'zoho.com', 'protonmail.com', 'proton.me'];
+  const emailParts = email.split('@');
+  if (emailParts.length < 2) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  const domain = emailParts[emailParts.length - 1].toLowerCase();
+  if (!allowedDomains.includes(domain)) {
+    return res.status(400).json({ error: 'Email must use a supported domain (e.g. gmail.com, outlook.com)' });
+  }
+
+  const data = db.getData();
+  const existingUser = data.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  if (existingUser) {
+    return res.status(400).json({ error: 'Email already registered' });
+  }
+
+  // Generate 6-digit verification code
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+  // Store in pendingVerifications with 10 minute expiry
+  pendingVerifications[email.toLowerCase()] = {
+    code,
+    expires: Date.now() + 10 * 60 * 1000
+  };
+
+  // Send verification email
+  const verificationEmailHtml = mailService.buildEmailTemplate({
+    title: 'Verify Your Email Address 🔑',
+    bodyHtml: `
+      <p>Hello,</p>
+      <p>Thank you for choosing <strong>CSK Electronics</strong>. To complete your registration, please use the following 6-digit verification code:</p>
+      <div style="text-align: center; margin: 30px 0;">
+        <span style="font-size: 32px; font-weight: 800; letter-spacing: 6px; padding: 10px 24px; background-color: #f1f5f9; border: 2px dashed #cbd5e1; border-radius: 8px; color: #1e3a8a; display: inline-block;">
+          ${code}
+        </span>
+      </div>
+      <p style="font-size: 13px; color: #64748b;">This code is valid for 10 minutes. If you did not request this code, please ignore this email.</p>
+    `
+  });
+
+  try {
+    const info = await mailService.sendMail({
+      to: email,
+      subject: 'CSK Electronics - Verify Your Email Address 🔑',
+      html: verificationEmailHtml
+    });
+    
+    let responseMsg = 'Verification code sent to your email.';
+    if (info && info.mock) {
+      console.log(`🔑 [MOCK] Verification code for ${email} is: ${code}`);
+      responseMsg = `[MOCK] Verification code: ${code} (SMTP not configured, checked logs)`;
+    }
+    
+    res.json({ message: responseMsg });
+  } catch (err) {
+    console.error('Error sending verification email:', err);
+    res.status(500).json({ error: 'Failed to send verification email: ' + err.message });
+  }
+});
+
 app.post('/api/auth/register', (req, res) => {
-  const { email, password, name, phone, address } = req.body;
-  if (!email || (!password && !useFirebase) || !name) {
+  const { email, password, name, phone, address, code, isGoogle } = req.body;
+  if (!email || (!password && !useFirebase && !isGoogle) || !name) {
     return res.status(400).json({ error: 'Name, email, and password are required' });
+  }
+
+  // Validate email domain
+  const allowedDomains = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com', 'csk.com', 'live.com', 'msn.com', 'aol.com', 'zoho.com', 'protonmail.com', 'proton.me'];
+  const emailParts = email.split('@');
+  if (emailParts.length < 2) {
+    return res.status(400).json({ error: 'Invalid email format' });
+  }
+  const domain = emailParts[emailParts.length - 1].toLowerCase();
+  if (!allowedDomains.includes(domain)) {
+    return res.status(400).json({ error: 'Email must use a supported domain (e.g. gmail.com, outlook.com)' });
+  }
+
+  // Validate phone number (10 digits)
+  if (phone) {
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(phone)) {
+      return res.status(400).json({ error: 'Phone number must be exactly 10 digits' });
+    }
+  }
+
+  // Verification code check (only if register via password/normal registration, i.e., !isGoogle)
+  if (!isGoogle) {
+    const record = pendingVerifications[email.toLowerCase()];
+    if (!record) {
+      return res.status(400).json({ error: 'No verification code found for this email. Please request a new one.' });
+    }
+    if (record.expires < Date.now()) {
+      delete pendingVerifications[email.toLowerCase()];
+      return res.status(400).json({ error: 'Verification code expired. Please request a new one.' });
+    }
+    if (record.code !== code) {
+      return res.status(400).json({ error: 'Invalid verification code.' });
+    }
+    // Code is valid, remove it
+    delete pendingVerifications[email.toLowerCase()];
   }
   
   const data = db.getData();

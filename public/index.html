@@ -41,6 +41,10 @@
         <button id="theme-toggle" class="btn-icon" title="Toggle Theme">
           <i class="fa-solid fa-moon"></i>
         </button>
+        <!-- Sign In Button -->
+        <button id="header-signin-btn" class="btn-primary" style="width: auto; padding: 0.5rem 1.25rem; font-size: 0.875rem; display: inline-flex; align-items: center; gap: 0.5rem;" onclick="openModal('modal-auth')">
+          <i class="fa-solid fa-right-to-bracket"></i> Sign In
+        </button>
         <!-- User Badge -->
         <div id="header-user-info" class="user-badge" style="display: none;">
           <i class="fa-solid fa-user-circle" style="font-size: 1.25rem;"></i>
@@ -170,134 +174,10 @@
                 <div class="panel-badge"><i class="fa-solid fa-bolt"></i> Fast Turnaround</div>
                 <div class="panel-badge"><i class="fa-solid fa-certificate"></i> Certified Techs</div>
               </div>
-            </div>
-          </div>
-
-          <!-- LOGIN / REGISTER CARD -->
-          <div class="auth-card">
-            <div class="auth-header">
-              <div style="display:flex; align-items:center; justify-content:center; gap:0.6rem; margin-bottom:0.5rem;">
-                <i class="fa-solid fa-tv" style="color:var(--accent-blue); font-size:1.5rem;"></i>
-                <h2 style="margin:0;">CSK Electronics</h2>
-              </div>
-              <p>Sign in or create your account</p>
-            </div>
-            
-            <div class="auth-tabs">
-              <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
-              <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Register</button>
-              <button id="tab-about" class="auth-tab" onclick="switchAuthTab('about')">About Us</button>
-            </div>
-
-            <!-- Login Form -->
-            <form id="login-form">
-              <div class="form-group">
-                <label for="login-email">Email Address</label>
-                <input type="email" id="login-email" required placeholder="name@csk.com">
-              </div>
-              <div class="form-group" style="margin-bottom: 0.5rem;">
-                <label for="login-password">Password</label>
-                <input type="password" id="login-password" required placeholder="••••••••">
-              </div>
-              <div class="form-group" style="text-align: right; margin-bottom: 1.5rem;">
-                <a href="#" onclick="showForgotPasswordForm(event)" class="forgot-password-link" style="color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 500;">Forgot Password?</a>
-              </div>
-              <button type="submit" class="btn-primary">Sign In</button>
-            </form>
-
-            <!-- Forgot Password Form -->
-            <form id="forgot-password-form" style="display: none;" onsubmit="handleForgotPassword(event)">
-              <div style="margin-bottom: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
-                Enter your email address and we will send a temporary password to your registered email and mobile number.
-              </div>
-              <div class="form-group">
-                <label for="forgot-email">Email Address</label>
-                <input type="email" id="forgot-email" required placeholder="name@csk.com">
-              </div>
-              <button type="submit" class="btn-primary" style="margin-bottom: 1rem;">Reset Password</button>
-              <div style="text-align: center; margin-top: 0.5rem;">
-                <a href="#" onclick="cancelForgotPassword(event)" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
-              </div>
-            </form>
-
-            <!-- Register Form -->
-            <form id="register-form" style="display: none;">
-              <div class="form-group">
-                <label for="reg-name">Full Name</label>
-                <input type="text" id="reg-name" required placeholder="John Doe">
-              </div>
-              <div class="form-group">
-                <label for="reg-email">Email Address</label>
-                <input type="email" id="reg-email" required placeholder="john@example.com">
-              </div>
-              <div class="form-group">
-                <label for="reg-phone">Phone Number</label>
-                <input type="tel" id="reg-phone" required placeholder="9876543210">
-              </div>
-              <div class="form-group">
-                <label for="reg-address">Detailed Address</label>
-                <textarea id="reg-address" required placeholder="123 Main St, Bangalore"></textarea>
-              </div>
-              <div class="form-group">
-                <label for="reg-password">Password</label>
-                <input type="password" id="reg-password" required placeholder="Minimum 6 characters">
-              </div>
-              <button type="submit" class="btn-primary">Register Account</button>
-            </form>
-
-            <!-- About Us Section -->
-            <div id="about-us-container" style="display: none; padding-top: 1rem;">
-              <div class="about-section">
-                <h3>Who We Are</h3>
-                <p>CSK Electronics is a premium provider of high-quality LED, LCD, OLED, and Smart TV installation, diagnostics, and expert repair services. Our certified engineers deliver professional, reliable, and affordable TV repair solutions directly to your doorstep.</p>
-              </div>
-
-              <div class="about-section disclaimer-box">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <div>
-                  <strong>Legal Disclaimer</strong>
-                  <p>This is an unauthorized TV Services. We are not directly affiliated with or authorized by any specific brand.</p>
-                </div>
-              </div>
-
-              <div class="about-section services-box">
-                <i class="fa-solid fa-briefcase"></i>
-                <div>
-                  <strong>Our Services</strong>
-                  <p>All Type of TV Brands We Under Take Service. Doorstep service is available, including pickup and delivery of the TV after repair.</p>
-                </div>
-              </div>
-
-              <div class="about-section">
-                <h3>Supported TV Brands (Expert Repair)</h3>
-                <div class="brand-chips">
-                  <span class="chip chip-samsung">SAMSUNG</span>
-                  <span class="chip chip-sony">SONY</span>
-                  <span class="chip chip-lg">LG</span>
-                  <span class="chip chip-panasonic">PANASONIC</span>
-                  <span class="chip chip-mi">MI</span>
-                  <span class="chip chip-philips">PHILIPS</span>
-                  <span class="chip chip-toshiba">TOSHIBA</span>
-                  <span class="chip chip-oneplus">ONEPLUS</span>
-                  <span class="chip chip-tcl">TCL</span>
-                </div>
-              </div>
-
-              <div class="about-section">
-                <h3>Appliances We Service</h3>
-                <div class="appliance-box">
-                  <i class="fa-solid fa-tv"></i>
-                  <span>LED / LCD / OLED & Smart TVs</span>
-                </div>
-              </div>
-
-              <div class="about-section promise-box">
-                <i class="fa-solid fa-circle-check"></i>
-                <div>
-                  <strong>Our Promise</strong>
-                  <p><strong>90-Day Warranty on All Repairs</strong><br>
-                  All replacement parts used during repair carry a standard 90-day warranty. Every invoice generated through this app is an authorized tax invoice containing valid corporate registry details.</p>
-                </div>
+              <div class="brand-panel-cta" style="margin-top: 2.5rem;">
+                <button class="btn-primary" style="width: auto; padding: 0.85rem 2.25rem; font-size: 1.05rem; box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4); background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-radius: 14px;" onclick="openModal('modal-auth')">
+                  <i class="fa-solid fa-right-to-bracket" style="margin-right: 0.5rem;"></i> Sign In / Register Account
+                </button>
               </div>
             </div>
           </div>
@@ -1351,6 +1231,189 @@
       </div>
       <div class="modal-footer" style="justify-content: flex-end;">
         <button type="button" class="btn-secondary" onclick="closeModal('modal-dashboard-stats')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AUTHENTICATION (LOGIN & REGISTER) -->
+  <div id="modal-auth" class="modal">
+    <div class="auth-card" style="max-height: 95vh; overflow-y: auto; padding: 2.5rem; position: relative; border-radius: 24px; border: 1px solid var(--glass-border); width: 100%; max-width: 460px;">
+      <button class="btn-icon" onclick="closeModal('modal-auth')" style="position: absolute; top: 1.25rem; right: 1.25rem; width: 32px; height: 32px; border: none; background: transparent; font-size: 1.15rem; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; z-index: 10;">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="auth-header" style="margin-top: 0.5rem;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:0.6rem; margin-bottom:0.5rem;">
+          <i class="fa-solid fa-tv" style="color:var(--accent-blue); font-size:1.5rem;"></i>
+          <h2 style="margin:0;">CSK Electronics</h2>
+        </div>
+        <p>Sign in or create your account</p>
+      </div>
+      
+      <div class="auth-tabs">
+        <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Login</button>
+        <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Register</button>
+        <button id="tab-about" class="auth-tab" onclick="switchAuthTab('about')">About Us</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" required placeholder="name@csk.com">
+        </div>
+        <div class="form-group" style="margin-bottom: 0.5rem;">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <div class="form-group" style="text-align: right; margin-bottom: 1.5rem;">
+          <a href="#" onclick="showForgotPasswordForm(event)" class="forgot-password-link" style="color: var(--accent-blue); text-decoration: none; font-size: 0.85rem; font-weight: 500;">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-bottom: 1rem;">Sign In</button>
+        
+        <div class="auth-divider" style="display: flex; align-items: center; text-align: center; margin: 1.5rem 0; color: var(--text-secondary); font-size: 0.85rem;">
+          <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
+          <span style="padding: 0 10px; font-weight: 500;">OR</span>
+          <span style="flex: 1; border-bottom: 1px solid var(--border-color);"></span>
+        </div>
+        <button type="button" id="google-signin-btn" class="btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem; font-weight: 600; padding: 0.85rem; border-radius: 12px;" onclick="handleGoogleSignIn()">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84c-.21 1.12-.84 2.07-1.8 2.7v2.24h2.91c1.7-1.56 2.69-3.86 2.69-6.57z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.91-2.24c-.8.54-1.84.87-3.05.87-2.34 0-4.33-1.58-5.03-3.7H.95v2.3C2.43 15.89 5.5 18 9 18z"/><path fill="#FBBC05" d="M3.97 10.75c-.18-.54-.28-1.12-.28-1.75s.1-1.21.28-1.75V4.95H.95A8.996 8.996 0 0 0 0 9c0 1.45.35 2.82.95 4.05l3.02-2.3z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.4C13.46.97 11.41 0 9 0 5.5 0 2.43 2.11.95 4.95l3.02 2.3c.7-2.12 2.69-3.67 5.03-3.67z"/></svg>
+          Sign In with Google
+        </button>
+      </form>
+
+      <!-- Forgot Password Form -->
+      <form id="forgot-password-form" style="display: none;" onsubmit="handleForgotPassword(event)">
+        <div style="margin-bottom: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem;">
+          Enter your email address and we will send a temporary password to your registered email and mobile number.
+        </div>
+        <div class="form-group">
+          <label for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" required placeholder="name@csk.com">
+        </div>
+        <button type="submit" class="btn-primary" style="margin-bottom: 1rem;">Reset Password</button>
+        <div style="text-align: center; margin-top: 0.5rem;">
+          <a href="#" onclick="cancelForgotPassword(event)" style="color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500;"><i class="fa-solid fa-arrow-left"></i> Back to Login</a>
+        </div>
+      </form>
+
+      <!-- Register Form (Two-step verification flow) -->
+      <form id="register-form" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+        <!-- Step 1: Registration Details -->
+        <div id="register-step-details">
+          <div class="form-group">
+            <label for="reg-name">Full Name</label>
+            <input type="text" id="reg-name" placeholder="John Doe">
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" placeholder="john@example.com">
+          </div>
+          <div class="form-group">
+            <label for="reg-phone">Phone Number</label>
+            <input type="tel" id="reg-phone" placeholder="9876543210">
+          </div>
+          <div class="form-group">
+            <label for="reg-address">Detailed Address</label>
+            <textarea id="reg-address" placeholder="123 Main St, Bangalore"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Password</label>
+            <input type="password" id="reg-password" placeholder="Minimum 6 characters">
+          </div>
+          <button type="button" id="reg-send-code-btn" class="btn-primary" onclick="sendVerificationCode()">Send Verification Code</button>
+        </div>
+
+        <!-- Step 2: Email OTP Code Verification -->
+        <div id="register-step-otp" style="display: none;">
+          <div style="margin-bottom: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
+            A 6-digit verification code has been sent to <strong id="verification-email-target" style="color: var(--accent-blue);"></strong>. Please check your inbox and enter the code below to complete registration.
+          </div>
+          <div class="form-group">
+            <label for="reg-otp" style="text-align: center; display: block; margin-bottom: 0.75rem;">6-Digit OTP Code</label>
+            <input type="text" id="reg-otp" placeholder="••••••" maxlength="6" style="text-align: center; font-size: 1.6rem; letter-spacing: 0.5rem; font-weight: 700; font-family: monospace;">
+          </div>
+          <button type="submit" id="reg-verify-btn" class="btn-primary" style="margin-bottom: 1.25rem;">Verify & Register Account</button>
+          <div style="display: flex; justify-content: space-between; font-size: 0.85rem; padding: 0 0.25rem;">
+            <a href="#" onclick="backToRegDetails(event)" style="color: var(--text-secondary); text-decoration: none; font-weight: 500;"><i class="fa-solid fa-arrow-left"></i> Edit Details</a>
+            <a href="#" onclick="resendVerificationCode(event)" style="color: var(--accent-blue); text-decoration: none; font-weight: 500;"><i class="fa-solid fa-rotate-right"></i> Resend Code</a>
+          </div>
+        </div>
+      </form>
+
+      <!-- Google Register Form (Used to complete Google account registration) -->
+      <form id="google-register-form" style="display: none;" onsubmit="handleGoogleRegisterSubmit(event)">
+        <div style="margin-bottom: 1.5rem; text-align: center; color: var(--text-secondary); font-size: 0.9rem; line-height: 1.5;">
+          Welcome <strong id="google-reg-name-display" style="color: var(--accent-blue);"></strong>! Please provide your phone number and address to finalize your CSK Electronics profile.
+        </div>
+        <div class="form-group">
+          <label for="google-reg-phone">Phone Number</label>
+          <input type="tel" id="google-reg-phone" required placeholder="9876543210">
+        </div>
+        <div class="form-group">
+          <label for="google-reg-address">Detailed Address</label>
+          <textarea id="google-reg-address" required placeholder="123 Main St, Bangalore"></textarea>
+        </div>
+        <button type="submit" class="btn-primary" style="margin-bottom: 1rem;">Complete Registration</button>
+        <div style="text-align: center;">
+          <a href="#" onclick="cancelGoogleRegister(event)" style="color: var(--text-secondary); text-decoration: none; font-size: 0.875rem; font-weight: 500;"><i class="fa-solid fa-arrow-left"></i> Cancel Sign In</a>
+        </div>
+      </form>
+
+      <!-- About Us Section -->
+      <div id="about-us-container" style="display: none; padding-top: 1rem;">
+        <div class="about-section">
+          <h3>Who We Are</h3>
+          <p>CSK Electronics is a premium provider of high-quality LED, LCD, OLED, and Smart TV installation, diagnostics, and expert repair services. Our certified engineers deliver professional, reliable, and affordable TV repair solutions directly to your doorstep.</p>
+        </div>
+
+        <div class="about-section disclaimer-box" style="display: flex; gap: 0.75rem; align-items: start; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-triangle-exclamation" style="color: #f59e0b; margin-top: 0.2rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem;">Legal Disclaimer</strong>
+            <p style="margin: 0.15rem 0 0; font-size: 0.8rem; color: var(--text-secondary);">This is an unauthorized TV Services. We are not directly affiliated with or authorized by any specific brand.</p>
+          </div>
+        </div>
+
+        <div class="about-section services-box" style="display: flex; gap: 0.75rem; align-items: start; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1rem; margin-bottom: 1rem;">
+          <i class="fa-solid fa-briefcase" style="color: var(--accent-blue); margin-top: 0.2rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem;">Our Services</strong>
+            <p style="margin: 0.15rem 0 0; font-size: 0.8rem; color: var(--text-secondary);">All Type of TV Brands We Under Take Service. Doorstep service is available, including pickup and delivery of the TV after repair.</p>
+          </div>
+        </div>
+
+        <div class="about-section" style="margin-bottom: 1rem;">
+          <h3>Supported TV Brands (Expert Repair)</h3>
+          <div class="brand-chips" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+            <span class="chip chip-samsung" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">SAMSUNG</span>
+            <span class="chip chip-sony" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">SONY</span>
+            <span class="chip chip-lg" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">LG</span>
+            <span class="chip chip-panasonic" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">PANASONIC</span>
+            <span class="chip chip-mi" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">MI</span>
+            <span class="chip chip-philips" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">PHILIPS</span>
+            <span class="chip chip-toshiba" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">TOSHIBA</span>
+            <span class="chip chip-oneplus" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">ONEPLUS</span>
+            <span class="chip chip-tcl" style="font-size: 0.7rem; font-weight: bold; background: #e0f2fe; color: #0369a1; padding: 0.25rem 0.5rem; border-radius: 5px;">TCL</span>
+          </div>
+        </div>
+
+        <div class="about-section" style="margin-bottom: 1rem;">
+          <h3>Appliances We Service</h3>
+          <div class="appliance-box" style="display: flex; align-items: center; gap: 0.5rem;">
+            <i class="fa-solid fa-tv" style="color: var(--accent-blue);"></i>
+            <span style="font-size: 0.85rem; font-weight: 500;">LED / LCD / OLED & Smart TVs</span>
+          </div>
+        </div>
+
+        <div class="about-section promise-box" style="display: flex; gap: 0.75rem; align-items: start; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.75rem 1rem;">
+          <i class="fa-solid fa-circle-check" style="color: var(--accent-success); margin-top: 0.2rem;"></i>
+          <div>
+            <strong style="font-size: 0.85rem;">Our Promise</strong>
+            <p style="margin: 0.15rem 0 0; font-size: 0.8rem; color: var(--text-secondary);"><strong>90-Day Warranty on All Repairs</strong><br>
+            All replacement parts used during repair carry a standard 90-day warranty. Every invoice generated through this app is an authorized tax invoice containing valid corporate registry details.</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>

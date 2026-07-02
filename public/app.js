@@ -8,6 +8,10 @@ let allUsers = [];
 let eventSource = null;
 let currentActiveView = 'auth';
 
+let googlePendingToken = null;
+let googlePendingEmail = null;
+let googlePendingName = null;
+
 // Firebase Client SDK Configuration (Auto-detects credentials file)
 let firebaseAuthActive = false;
 let auth = null;
@@ -187,8 +191,10 @@ function routeToDashboard() {
 // SETUP HEADER & SIDEBAR
 function setupHeader() {
   const userInfo = document.getElementById('header-user-info');
+  const signinBtn = document.getElementById('header-signin-btn');
   if (currentUser) {
     userInfo.style.display = 'flex';
+    if (signinBtn) signinBtn.style.display = 'none';
     document.getElementById('user-display-name').innerText = currentUser.name;
     document.getElementById('user-display-role').innerText = currentUser.role;
     
@@ -199,6 +205,7 @@ function setupHeader() {
     }
   } else {
     userInfo.style.display = 'none';
+    if (signinBtn) signinBtn.style.display = 'inline-flex';
   }
 }
 
@@ -375,6 +382,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
     
     setupHeader();
     connectSSE();
+    closeModal('modal-auth');
     
     setTimeout(() => {
       showToast(`Welcome back, ${currentUser.name}!`, 'success');
@@ -392,6 +400,78 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
   }
 });
 
+// Validation helpers
+const ALLOWED_EMAIL_DOMAINS = ['gmail.com', 'outlook.com', 'yahoo.com', 'hotmail.com', 'icloud.com', 'csk.com', 'live.com', 'msn.com', 'aol.com', 'zoho.com', 'protonmail.com', 'proton.me'];
+
+function validateEmailDomain(email) {
+  const parts = email.split('@');
+  if (parts.length < 2) return false;
+  const domain = parts[parts.length - 1].toLowerCase();
+  return ALLOWED_EMAIL_DOMAINS.includes(domain);
+}
+
+function validatePhoneNumber(phone) {
+  const phoneRegex = /^[0-9]{10}$/;
+  return phoneRegex.test(phone);
+}
+
+// Send OTP code for registration
+async function sendVerificationCode() {
+  const name = document.getElementById('reg-name').value.trim();
+  const email = document.getElementById('reg-email').value.trim();
+  const phone = document.getElementById('reg-phone').value.trim();
+  const address = document.getElementById('reg-address').value.trim();
+  const password = document.getElementById('reg-password').value.trim();
+  
+  if (!name || !email || !phone || !address || !password) {
+    return showToast('All fields are required', 'warning');
+  }
+  
+  if (!validateEmailDomain(email)) {
+    return showToast('Supported email domains: ' + ALLOWED_EMAIL_DOMAINS.map(d => '@' + d).join(', '), 'warning');
+  }
+  
+  if (!validatePhoneNumber(phone)) {
+    return showToast('Phone number must be exactly 10 digits (numerical only)', 'warning');
+  }
+  
+  if (password.length < 6) {
+    return showToast('Password must be at least 6 characters long', 'warning');
+  }
+  
+  const btn = document.getElementById('reg-send-code-btn');
+  const origText = btn.innerText;
+  btn.innerText = 'Sending Code...';
+  btn.disabled = true;
+  
+  try {
+    const res = await apiCall('/auth/send-verification', 'POST', { email }, null, true);
+    
+    // Switch to step 2 (OTP code input)
+    document.getElementById('verification-email-target').innerText = email;
+    document.getElementById('register-step-details').style.display = 'none';
+    document.getElementById('register-step-otp').style.display = 'block';
+    
+    showToast(res.message || 'Verification code sent to your email!', 'success');
+  } catch (err) {
+    showToast(err.message || 'Failed to send verification code', 'danger');
+  } finally {
+    btn.innerText = origText;
+    btn.disabled = false;
+  }
+}
+
+function backToRegDetails(e) {
+  if (e) e.preventDefault();
+  document.getElementById('register-step-otp').style.display = 'none';
+  document.getElementById('register-step-details').style.display = 'block';
+}
+
+function resendVerificationCode(e) {
+  if (e) e.preventDefault();
+  sendVerificationCode();
+}
+
 // Register Submit
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -400,14 +480,15 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
   const phone = document.getElementById('reg-phone').value.trim();
   const address = document.getElementById('reg-address').value.trim();
   const password = document.getElementById('reg-password').value.trim();
+  const code = document.getElementById('reg-otp').value.trim();
   
-  if (password.length < 6) {
-    return showToast('Password must be at least 6 characters long', 'warning');
+  if (!code || code.length !== 6) {
+    return showToast('Please enter the 6-digit verification code', 'warning');
   }
   
-  const btn = document.querySelector('#register-form button[type="submit"]');
+  const btn = document.getElementById('reg-verify-btn');
   const origText = btn.innerText;
-  btn.innerText = 'Registering...';
+  btn.innerText = 'Verifying & Registering...';
   btn.disabled = true;
   
   try {
@@ -431,7 +512,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       
       // 2. Register metadata on CSK Backend
       try {
-        await apiCall('/auth/register', 'POST', { name, email, phone, address }, null, true);
+        await apiCall('/auth/register', 'POST', { name, email, phone, address, code, isGoogle: false }, null, true);
       } catch (backendErr) {
         // Clean up Firebase user if metadata registration fails
         if (userCredential && userCredential.user) {
@@ -455,7 +536,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     } else {
       // Fallback local password register
       try {
-        await apiCall('/auth/register', 'POST', { name, email, phone, address, password }, null, true);
+        await apiCall('/auth/register', 'POST', { name, email, phone, address, password, code, isGoogle: false }, null, true);
       } catch (err) {
         if (err.message && err.message.toLowerCase().includes('already registered')) {
           showToast('You already have an account! Redirecting to login...', 'warning');
@@ -469,6 +550,12 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     }
     
     showToast('Registration successful! Please login.', 'success');
+    
+    // Reset forms and view steps
+    document.getElementById('register-form').reset();
+    document.getElementById('register-step-details').style.display = 'block';
+    document.getElementById('register-step-otp').style.display = 'none';
+    
     switchAuthTab('login');
     document.getElementById('login-email').value = email;
   } catch (err) {
@@ -478,6 +565,235 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     btn.disabled = false;
   }
 });
+
+// Google Authentication UI and Click Helpers
+async function handleGoogleSignIn() {
+  if (firebaseAuthActive && auth) {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const btn = document.getElementById('google-signin-btn');
+    const origText = btn.innerHTML;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Connecting...';
+    btn.disabled = true;
+    
+    try {
+      const userCredential = await auth.signInWithPopup(provider);
+      const googleUser = userCredential.user;
+      const idToken = await googleUser.getIdToken();
+      
+      // Exchange token with backend
+      try {
+        const res = await apiCall('/auth/login', 'POST', {}, idToken, true);
+        
+        token = res.token;
+        currentUser = res.user;
+        
+        localStorage.setItem('csk_token', token);
+        localStorage.setItem('csk_user', JSON.stringify(currentUser));
+        
+        // Success flow
+        closeModal('modal-auth');
+        const overlay = document.getElementById('login-transition-overlay');
+        if (overlay) overlay.classList.add('active');
+        setupHeader();
+        connectSSE();
+        
+        setTimeout(() => {
+          showToast(`Welcome back, ${currentUser.name}!`, 'success');
+          if (overlay) overlay.classList.remove('active');
+          setTimeout(() => { routeToDashboard(); }, 500);
+        }, 2200);
+        
+      } catch (backendErr) {
+        if (backendErr.status === 404 || (backendErr.message && backendErr.message.toLowerCase().includes('not registered'))) {
+          // Open registration form for google auth
+          googlePendingToken = idToken;
+          googlePendingEmail = googleUser.email;
+          googlePendingName = googleUser.displayName || googleUser.email;
+          
+          showGoogleRegistration();
+        } else {
+          showToast(backendErr.message, 'danger');
+        }
+      }
+    } catch (fbErr) {
+      console.error(fbErr);
+      showToast(fbErr.message || 'Google Authentication failed', 'danger');
+    } finally {
+      btn.innerHTML = origText;
+      btn.disabled = false;
+    }
+  } else {
+    // Simulated Google login for testing without Firebase setup
+    showToast('Firebase is not active. Starting simulated Google sign-in...', 'info');
+    simulateGoogleSignIn();
+  }
+}
+
+function showGoogleRegistration() {
+  // Hide all tabs
+  const authTabs = document.querySelector('.auth-tabs');
+  if (authTabs) authTabs.style.display = 'none';
+  
+  // Hide all forms
+  document.getElementById('login-form').style.display = 'none';
+  document.getElementById('register-form').style.display = 'none';
+  document.getElementById('forgot-password-form').style.display = 'none';
+  
+  const aboutUs = document.getElementById('about-us-container');
+  if (aboutUs) aboutUs.style.display = 'none';
+  
+  // Show Google register form
+  document.getElementById('google-register-form').style.display = 'block';
+  document.getElementById('google-reg-name-display').innerText = googlePendingName;
+  document.getElementById('google-reg-phone').value = '';
+  document.getElementById('google-reg-address').value = '';
+}
+
+function cancelGoogleRegister(e) {
+  if (e) e.preventDefault();
+  googlePendingToken = null;
+  googlePendingEmail = null;
+  googlePendingName = null;
+  
+  document.getElementById('google-register-form').style.display = 'none';
+  const authTabs = document.querySelector('.auth-tabs');
+  if (authTabs) authTabs.style.display = 'flex';
+  switchAuthTab('login');
+}
+
+async function handleGoogleRegisterSubmit(e) {
+  e.preventDefault();
+  const phone = document.getElementById('google-reg-phone').value.trim();
+  const address = document.getElementById('google-reg-address').value.trim();
+  
+  if (!validatePhoneNumber(phone)) {
+    return showToast('Phone number must be exactly 10 digits', 'warning');
+  }
+  
+  const btn = document.querySelector('#google-register-form button[type="submit"]');
+  const origText = btn.innerText;
+  btn.innerText = 'Completing Registration...';
+  btn.disabled = true;
+  
+  try {
+    if (firebaseAuthActive && auth) {
+      // Real firebase register
+      await apiCall('/auth/register', 'POST', {
+        name: googlePendingName,
+        email: googlePendingEmail,
+        phone,
+        address,
+        isGoogle: true
+      }, null, true);
+      
+      showToast('Registration successful! Logging in...', 'success');
+      
+      // Auto login after google registration
+      const res = await apiCall('/auth/login', 'POST', {}, googlePendingToken, true);
+      token = res.token;
+      currentUser = res.user;
+      
+      localStorage.setItem('csk_token', token);
+      localStorage.setItem('csk_user', JSON.stringify(currentUser));
+      
+      closeModal('modal-auth');
+      const overlay = document.getElementById('login-transition-overlay');
+      if (overlay) overlay.classList.add('active');
+      setupHeader();
+      connectSSE();
+      
+      setTimeout(() => {
+        showToast(`Welcome, ${currentUser.name}!`, 'success');
+        if (overlay) overlay.classList.remove('active');
+        setTimeout(() => { routeToDashboard(); }, 500);
+      }, 2200);
+    } else {
+      // Simulated Google Register
+      await apiCall('/auth/register', 'POST', {
+        name: googlePendingName,
+        email: googlePendingEmail,
+        phone,
+        address,
+        password: 'GoogleMockPassword123!',
+        isGoogle: true
+      }, null, true);
+      
+      showToast('Simulated Google registration successful! Logging in...', 'success');
+      
+      const res = await apiCall('/auth/login', 'POST', {
+        email: googlePendingEmail,
+        password: 'GoogleMockPassword123!'
+      }, null, true);
+      
+      token = res.token;
+      currentUser = res.user;
+      
+      localStorage.setItem('csk_token', token);
+      localStorage.setItem('csk_user', JSON.stringify(currentUser));
+      
+      closeModal('modal-auth');
+      const overlay = document.getElementById('login-transition-overlay');
+      if (overlay) overlay.classList.add('active');
+      setupHeader();
+      connectSSE();
+      
+      setTimeout(() => {
+        showToast(`Welcome (Simulated), ${currentUser.name}!`, 'success');
+        if (overlay) overlay.classList.remove('active');
+        setTimeout(() => { routeToDashboard(); }, 500);
+      }, 2200);
+    }
+  } catch (err) {
+    showToast(err.message || 'Failed to complete registration', 'danger');
+  } finally {
+    btn.innerText = origText;
+    btn.disabled = false;
+  }
+}
+
+function simulateGoogleSignIn() {
+  const simulatedEmail = prompt("Enter a Google email to simulate login (e.g. yourname@gmail.com):", "testgoogle@gmail.com");
+  if (!simulatedEmail) return;
+  
+  if (!validateEmailDomain(simulatedEmail)) {
+    return showToast('Supported email domains: ' + ALLOWED_EMAIL_DOMAINS.map(d => '@' + d).join(', '), 'warning');
+  }
+  
+  const simulatedName = simulatedEmail.split('@')[0];
+  
+  googlePendingToken = 'simulated-google-token-' + Date.now();
+  googlePendingEmail = simulatedEmail;
+  googlePendingName = simulatedName.charAt(0).toUpperCase() + simulatedName.slice(1);
+  
+  // Call login to see if registered
+  apiCall('/auth/login', 'POST', {
+    email: googlePendingEmail,
+    password: 'GoogleMockPassword123!'
+  }, null, true)
+  .then(res => {
+    token = res.token;
+    currentUser = res.user;
+    
+    localStorage.setItem('csk_token', token);
+    localStorage.setItem('csk_user', JSON.stringify(currentUser));
+    
+    closeModal('modal-auth');
+    const overlay = document.getElementById('login-transition-overlay');
+    if (overlay) overlay.classList.add('active');
+    setupHeader();
+    connectSSE();
+    
+    setTimeout(() => {
+      showToast(`Welcome back (Simulated Google), ${currentUser.name}!`, 'success');
+      if (overlay) overlay.classList.remove('active');
+      setTimeout(() => { routeToDashboard(); }, 500);
+    }, 2200);
+  })
+  .catch(err => {
+    // If not registered, redirect to complete Google register
+    showGoogleRegistration();
+  });
+}
 
 // Forgot Password UI Helpers
 function showForgotPasswordForm(e) {
@@ -538,10 +854,26 @@ function logout() {
   document.getElementById('header-user-info').style.display = 'none';
   document.getElementById('app-sidebar').style.display = 'none';
   
+  // Reset Sign In button
+  const signinBtn = document.getElementById('header-signin-btn');
+  if (signinBtn) signinBtn.style.display = 'inline-flex';
+  
   // Clear forms
   document.getElementById('login-form').reset();
   document.getElementById('register-form').reset();
   
+  // Reset OTP steps and other forms
+  const detailsStep = document.getElementById('register-step-details');
+  const otpStep = document.getElementById('register-step-otp');
+  const googleRegForm = document.getElementById('google-register-form');
+  const authTabs = document.querySelector('.auth-tabs');
+  
+  if (detailsStep) detailsStep.style.display = 'block';
+  if (otpStep) otpStep.style.display = 'none';
+  if (googleRegForm) googleRegForm.style.display = 'none';
+  if (authTabs) authTabs.style.display = 'flex';
+  
+  closeModal('modal-auth');
   showView('auth');
   showToast('Logged out successfully', 'info');
 }
