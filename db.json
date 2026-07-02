@@ -83,6 +83,21 @@
       "technicianName": null,
       "createdAt": "2026-06-29T09:41:44.064Z",
       "updatedAt": "2026-06-29T13:16:45.620Z"
+    },
+    {
+      "id": "REQ-1002",
+      "customerId": "u-b82ed069",
+      "customerName": "CHILKUR DATTATHREYA",
+      "customerPhone": "7981785948",
+      "customerAddress": "3, RK Puram Colony Road",
+      "tvBrand": "SONY",
+      "tvModel": "KDL-55",
+      "problemDesc": "Pannel",
+      "status": "New",
+      "assignedTechId": null,
+      "technicianName": null,
+      "createdAt": "2026-07-02T10:06:16.386Z",
+      "updatedAt": "2026-07-02T10:06:16.387Z"
     }
   ],
   "estimates": [
@@ -178,6 +193,13 @@
       "note": "TV Service Job marked completed and closed by Customer.",
       "updatedBy": "DATTU",
       "createdAt": "2026-06-29T13:16:45.620Z"
+    },
+    {
+      "requestId": "REQ-1002",
+      "status": "New",
+      "note": "Service complaint registered successfully. Awaiting Admin to assign technician.",
+      "updatedBy": "System",
+      "createdAt": "2026-07-02T10:06:16.387Z"
     }
   ],
   "emailConfig": {

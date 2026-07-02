@@ -440,6 +440,18 @@ app.post('/api/auth/login', async (req, res) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
 
+  if (token && (!useFirebase || !firebaseAuth)) {
+    // Check if we can still try to log them in locally since the client sent email & password
+    const { email, password } = req.body;
+    if (email && password) {
+      console.log(`ℹ️ [AUTH] Client sent token, but Firebase is inactive. Falling back to local auth for ${email}`);
+    } else {
+      return res.status(400).json({
+        error: 'Firebase Auth is not active on this server. Please ensure the FIREBASE_SERVICE_ACCOUNT environment variable is set correctly.'
+      });
+    }
+  }
+
   if (useFirebase && firebaseAuth && token) {
     try {
       const decodedToken = await firebaseAuth.verifyIdToken(token);

@@ -342,7 +342,7 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
       const idToken = await userCredential.user.getIdToken();
       // 3. Exchange ID Token for User Profile from CSK Backend
       try {
-        res = await apiCall('/auth/login', 'POST', {}, idToken, true);
+        res = await apiCall('/auth/login', 'POST', { email, password }, idToken, true);
       } catch (backendErr) {
         if (backendErr.message && backendErr.message.toLowerCase().includes('not registered')) {
           showToast('This email is not registered! Redirecting to signup...', 'warning');
