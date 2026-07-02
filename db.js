@@ -70,6 +70,14 @@ function ensureStructure(data) {
     console.log('🔄 [DB SELF-HEAL] Successfully wiped all old test records and users.');
   }
 
+  // Self-heal: Force Gmail to port 587 if it is set to 465 (as 465 times out on Railway/Vercel)
+  if (data.emailConfig && data.emailConfig.smtpHost === 'smtp.gmail.com' && parseInt(data.emailConfig.smtpPort) === 465) {
+    data.emailConfig.smtpPort = 587;
+    data.emailConfig.smtpSecure = false;
+    dirty = true;
+    console.log('🔄 [DB SELF-HEAL] Gmail SMTP port auto-updated to 587 (STARTTLS) to prevent connection timeout.');
+  }
+
   return data;
 }
 
