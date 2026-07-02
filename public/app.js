@@ -11,6 +11,7 @@ let currentActiveView = 'auth';
 let googlePendingToken = null;
 let googlePendingEmail = null;
 let googlePendingName = null;
+let registrationVerificationToken = null;
 
 // Firebase Client SDK Configuration (Auto-detects credentials file)
 let firebaseAuthActive = false;
@@ -447,6 +448,9 @@ async function sendVerificationCode() {
   try {
     const res = await apiCall('/auth/send-verification', 'POST', { email }, null, true);
     
+    // Store verification token for stateless verification during registration
+    registrationVerificationToken = res.verificationToken;
+    
     // Switch to step 2 (OTP code input)
     document.getElementById('verification-email-target').innerText = email;
     document.getElementById('register-step-details').style.display = 'none';
@@ -512,7 +516,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
       
       // 2. Register metadata on CSK Backend
       try {
-        await apiCall('/auth/register', 'POST', { name, email, phone, address, password, code, isGoogle: false }, null, true);
+        await apiCall('/auth/register', 'POST', { name, email, phone, address, password, code, verificationToken: registrationVerificationToken, isGoogle: false }, null, true);
       } catch (backendErr) {
         // Clean up Firebase user if metadata registration fails
         if (userCredential && userCredential.user) {
@@ -536,7 +540,7 @@ document.getElementById('register-form').addEventListener('submit', async (e) =>
     } else {
       // Fallback local password register
       try {
-        await apiCall('/auth/register', 'POST', { name, email, phone, address, password, code, isGoogle: false }, null, true);
+        await apiCall('/auth/register', 'POST', { name, email, phone, address, password, code, verificationToken: registrationVerificationToken, isGoogle: false }, null, true);
       } catch (err) {
         if (err.message && err.message.toLowerCase().includes('already registered')) {
           showToast('You already have an account! Redirecting to login...', 'warning');

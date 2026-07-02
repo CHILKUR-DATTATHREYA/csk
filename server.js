@@ -253,13 +253,17 @@ app.post('/api/auth/send-verification', async (req, res) => {
   // Generate 6-digit verification code
   const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // Store OTP in db.json (persists across serverless instances unlike in-memory)
-  if (!data.pendingVerifications) data.pendingVerifications = {};
-  data.pendingVerifications[email.toLowerCase()] = {
-    code,
-    expires: Date.now() + 10 * 60 * 1000
-  };
-  db.saveData(data);
+  // Create a secure stateless verification token containing hashed code and email
+  // Signed using JWT_SECRET. This works 100% across serverless containers on Vercel.
+  const verificationToken = jwt.sign(
+    {
+      email: email.toLowerCase(),
+      codeHash: crypto.createHash('sha256').update(code).digest('hex')
+    },
+    JWT_SECRET,
+    { expiresIn: '10m' }
+  );
+
 
   // Send verification email
   const verificationEmailHtml = mailService.buildEmailTemplate({
@@ -289,7 +293,7 @@ app.post('/api/auth/send-verification', async (req, res) => {
       responseMsg = `[MOCK] Verification code: ${code} (SMTP not configured, checked logs)`;
     }
     
-    res.json({ message: responseMsg });
+    res.json({ message: responseMsg, verificationToken });
   } catch (err) {
     console.error('Error sending verification email:', err);
     res.status(500).json({ error: 'Failed to send verification email: ' + err.message });
@@ -297,7 +301,7 @@ app.post('/api/auth/send-verification', async (req, res) => {
 });
 
 app.post('/api/auth/register', (req, res) => {
-  const { email, password, name, phone, address, code, isGoogle } = req.body;
+  const { email, password, name, phone, address, code, verificationToken, isGoogle } = req.body;
   // In Firebase mode, the password is managed by Firebase — CSK backend doesn't need it.
   // In local JWT mode, password is required.
   // isGoogle:true also bypasses password requirement.
@@ -327,23 +331,28 @@ app.post('/api/auth/register', (req, res) => {
 
   // Verification code check (only if register via password/normal registration, i.e., !isGoogle)
   if (!isGoogle) {
-    const data2 = db.getData();
-    const verifs = data2.pendingVerifications || {};
-    const record = verifs[email.toLowerCase()];
-    if (!record) {
-      return res.status(400).json({ error: 'No verification code found for this email. Please request a new one.' });
+    if (!verificationToken) {
+      return res.status(400).json({ error: 'Missing verification token. Please request a new code.' });
     }
-    if (record.expires < Date.now()) {
-      delete data2.pendingVerifications[email.toLowerCase()];
-      db.saveData(data2);
-      return res.status(400).json({ error: 'Verification code expired. Please request a new one.' });
+    try {
+      const decoded = jwt.verify(verificationToken, JWT_SECRET);
+      
+      // Verify email matches the token
+      if (decoded.email !== email.toLowerCase()) {
+        return res.status(400).json({ error: 'Verification token does not match the registration email.' });
+      }
+      
+      // Verify code matches
+      const codeHash = crypto.createHash('sha256').update(code).digest('hex');
+      if (decoded.codeHash !== codeHash) {
+        return res.status(400).json({ error: 'Invalid verification code.' });
+      }
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        return res.status(400).json({ error: 'Verification code expired. Please request a new one.' });
+      }
+      return res.status(400).json({ error: 'Invalid or expired verification token.' });
     }
-    if (record.code !== code) {
-      return res.status(400).json({ error: 'Invalid verification code.' });
-    }
-    // Code is valid, remove it
-    delete data2.pendingVerifications[email.toLowerCase()];
-    db.saveData(data2);
   }
   
   const data = db.getData();

@@ -57,6 +57,15 @@
       "role": "customer",
       "phone": "7981785948",
       "address": "AP"
+    },
+    {
+      "id": "u-b82ed069",
+      "email": "dattathreyachilkur+test2@gmail.com",
+      "passwordHash": "$2a$10$1bPaIOpMi422ZuI64iQf.OV1b2zP71CQbivMRqkHT54oTT3epiDwa",
+      "name": "CHILKUR DATTATHREYA",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "3, RK Puram Colony Road"
     }
   ],
   "requests": [
