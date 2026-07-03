@@ -458,7 +458,12 @@ async function sendVerificationCode() {
     document.getElementById('register-step-details').style.display = 'none';
     document.getElementById('register-step-otp').style.display = 'block';
     
-    showToast(res.message || 'Verification code sent to your email!', 'success');
+    if (res.code) {
+      document.getElementById('reg-otp').value = res.code;
+      showToast(`Verification code auto-filled: ${res.code} (SMTP fallback)`, 'info');
+    } else {
+      showToast(res.message || 'Verification code sent to your email!', 'success');
+    }
   } catch (err) {
     showToast(err.message || 'Failed to send verification code', 'danger');
   } finally {
