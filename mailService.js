@@ -26,14 +26,7 @@ function getTransporter() {
     connectionTimeout: 20000,
     greetingTimeout: 15000,
     socketTimeout: 30000,
-    lookup: (hostname, options, callback) => {
-      // Force family: 4. If options is a number or primitive, override with object.
-      let dnsOpts = { family: 4 };
-      if (options && typeof options === 'object') {
-        dnsOpts = { ...options, family: 4 };
-      }
-      require('dns').lookup(hostname, dnsOpts, callback);
-    },
+    family: 4, // Force Nodemailer to use IPv4 for DNS and socket connection
     tls: {
       rejectUnauthorized: false
     }
