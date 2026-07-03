@@ -10,6 +10,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const https = require('https');
 
 // In-memory cache
 let mem = null;
@@ -149,30 +150,43 @@ function initDb() {
   }
 }
 
+const EXTENDSCLASS_BIN = 'https://extendsclass.com/api/json-storage/bin/cadceef';
+
 /**
- * Pulls the latest database from disk.
- * Fast, file-based operation replacing slow serverless cloud synchronization.
+ * Pulls the latest database from the cloud.
  */
 async function pullLatest() {
   initDb();
   const targetPath = getDbPath();
-  try {
-    const raw = fs.readFileSync(targetPath, 'utf8');
-    const parsed = JSON.parse(raw);
-    const valid = ensureStructure(parsed);
-    if (valid) {
-      mem = valid;
-      dirty = false;
-    }
-  } catch (err) {
-    console.error('Error loading database file:', err.message);
-  }
-  return mem;
+  return new Promise((resolve) => {
+    https.get(EXTENDSCLASS_BIN, res => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          const valid = ensureStructure(parsed);
+          if (valid) {
+            fs.writeFileSync(targetPath, JSON.stringify(valid, null, 2), 'utf8');
+            mem = valid;
+            dirty = false;
+            resolve(mem);
+          } else {
+            resolve(mem);
+          }
+        } catch (e) {
+          resolve(mem);
+        }
+      });
+    }).on('error', err => {
+      console.error('Failed to pull from cloud database, using local file:', err.message);
+      resolve(mem);
+    });
+  });
 }
 
 /**
- * Pushes in-memory cache changes to disk.
- * Fast, file-based operation.
+ * Pushes in-memory cache changes to the cloud.
  */
 async function pushLatest() {
   if (mem && dirty) {
@@ -183,6 +197,33 @@ async function pushLatest() {
     } catch (err) {
       console.error('Error writing database to disk:', err.message);
     }
+
+    return new Promise((resolve) => {
+      const payload = JSON.stringify(mem);
+      const req = https.request(EXTENDSCLASS_BIN, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(payload)
+        }
+      }, res => {
+        res.on('data', () => {});
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            console.log('✅ Cloud DB push successful.');
+          } else {
+            console.error('❌ Cloud DB push failed:', res.statusCode);
+          }
+          resolve(mem);
+        });
+      });
+      req.on('error', err => {
+        console.error('Cloud DB push socket error:', err.message);
+        resolve(mem);
+      });
+      req.write(payload);
+      req.end();
+    });
   }
   return mem;
 }
