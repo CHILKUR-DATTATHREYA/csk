@@ -66,6 +66,15 @@
       "role": "customer",
       "phone": "7981785948",
       "address": "3, RK Puram Colony Road"
+    },
+    {
+      "id": "u-f07b3dac",
+      "email": "dattatreyachilkur+test3@gmail.com",
+      "passwordHash": "$2a$10$09uWsBP3S.cpt6v2T/BB0etbeHQd1oo89LPKAn/jPfylFRQL/Og8W",
+      "name": "TINKUUU",
+      "role": "customer",
+      "phone": "7981785948",
+      "address": "HYD"
     }
   ],
   "requests": [

@@ -33,8 +33,10 @@ fetch('/firebase-config.json')
     console.log('🔐 [AUTH] Client running in local JWT mode.');
   });
 
-// Base URL for API
-const API_BASE = '/api';
+// Base URL for API (points to persistent Railway backend in production, and relative path locally)
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+  ? '/api'
+  : 'https://cskelectronicservices.up.railway.app/api';
 
 // Intro Screen Timer
 window.addEventListener('DOMContentLoaded', () => {
