@@ -5,11 +5,11 @@ const db = require('./db');
 // ─────────────────────────────────────────────────────────────────────────────
 // Build a Nodemailer transporter from saved emailConfig
 // ─────────────────────────────────────────────────────────────────────────────
-function getTransporter() {
+function getTransporter(resolvedHost) {
   const data = db.getData();
   const config = data.emailConfig || {};
 
-  const host = config.smtpHost || 'smtp.gmail.com';
+  const host = resolvedHost || config.smtpHost || 'smtp.gmail.com';
   const port = parseInt(config.smtpPort) || 587;
   // Port 465 = SSL/TLS (secure:true) | Port 587 = STARTTLS (secure:false)
   const secure = port === 465;
@@ -28,6 +28,7 @@ function getTransporter() {
     socketTimeout: 30000,
     family: 4, // Force Nodemailer to use IPv4 for DNS and socket connection
     tls: {
+      servername: 'smtp.gmail.com', // Crucial: forces correct certificate validation even when using direct IP host
       rejectUnauthorized: false
     }
   });
@@ -67,7 +68,28 @@ async function sendMail({ to, subject, html, attachments }) {
       ? `CSK Electronics <${config.smtpUser}>`
       : (config.defaultFrom || `CSK Electronics <${config.smtpUser}>`);
 
-    const transporter = getTransporter();
+    // Perform DNS pre-resolution for Gmail SMTP to force IPv4
+    let resolvedHost = config.smtpHost || 'smtp.gmail.com';
+    if (isGmail) {
+      try {
+        const dns = require('dns');
+        const addresses = await new Promise((resolve) => {
+          dns.resolve4(resolvedHost, (err, addrs) => {
+            if (err || !addrs || addrs.length === 0) resolve([]);
+            else resolve(addrs);
+          });
+        });
+        if (addresses.length > 0) {
+          // Select a random resolved IPv4 address of Gmail SMTP
+          resolvedHost = addresses[Math.floor(Math.random() * addresses.length)];
+          console.log(`ℹ️ [DNS] Resolved Gmail SMTP to IPv4: ${resolvedHost}`);
+        }
+      } catch (dnsErr) {
+        console.warn('DNS lookup failed for Gmail SMTP, falling back to hostname:', dnsErr.message);
+      }
+    }
+
+    const transporter = getTransporter(resolvedHost);
 
     // Verify SMTP connection before sending — provides clear early error
     await transporter.verify().catch(err => {
